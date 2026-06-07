@@ -96,36 +96,33 @@ const TICKET_TYPES = {
   },
 };
 
-// ==================== 聊天方式 ====================
+// ==================== 聊天方式（基础效果 × 买券权重 = 最终效果） ====================
+// 小券(×1) / 大券(×3) / 关门(×5)
 const CHAT_METHODS = {
   casual: {
     name: '随便聊聊',
     emoji: '💬',
-    cost: { economy: 0 },
     effect: { mood: 3, bond: 2 },
     idolEffect: { mental: 1, affection: 2, attention: 1 },
   },
   values: {
     name: '聊价值观',
     emoji: '🤔',
-    cost: { economy: 0 },
     effect: { mood: 5, bond: 4 },
     idolEffect: { mental: 0, affection: 5, attention: 0 },
   },
   hobbies: {
     name: '聊兴趣爱好',
     emoji: '🎮',
-    cost: { economy: 0 },
     effect: { mood: 4, bond: 3 },
     idolEffect: { mental: 3, affection: 3, attention: 1 },
   },
   stage: {
     name: '聊舞台',
     emoji: '🎤',
-    cost: { economy: 0 },
     effect: { mood: 8, bond: 5 },
     idolEffect: { mental: 5, affection: 3, attention: 3 },
-    // 如果参与方式是"只参与特典"则有负面效果
+    // 如果参与方式是"只参与特典"则有负面效果（同样×权重）
     penaltyCondition: (s) => s.choices.participationMethod === 'tokuten',
     penalty: { mood: -8, bond: -5 },
     penaltyIdolEffect: { mental: -8, affection: -8, attention: -5 },
@@ -134,11 +131,34 @@ const CHAT_METHODS = {
   demand: {
     name: '要求对应',
     emoji: '💪',
-    cost: { economy: 0 },
     effect: { mood: 6, bond: 7 },
     idolEffect: { mental: -2, affection: 6, attention: 2 },
   },
 };
+
+// ★ 聊天效果乘算：base × ticket.weight
+function weightedChatEffect(chat, weight) {
+  const w = weight || 1;
+  return {
+    mood:    (chat.effect.mood || 0) * w,
+    bond:    (chat.effect.bond || 0) * w,
+    mental:    (chat.idolEffect?.mental || 0) * w,
+    affection: (chat.idolEffect?.affection || 0) * w,
+    attention: (chat.idolEffect?.attention || 0) * w,
+  };
+}
+
+// ★ 聊天惩罚乘算：penalty × ticket.weight
+function weightedChatPenalty(chat, weight) {
+  const w = weight || 1;
+  return {
+    mood:    (chat.penalty?.mood || 0) * w,
+    bond:    (chat.penalty?.bond || 0) * w,
+    mental:    (chat.penaltyIdolEffect?.mental || 0) * w,
+    affection: (chat.penaltyIdolEffect?.affection || 0) * w,
+    attention: (chat.penaltyIdolEffect?.attention || 0) * w,
+  };
+}
 
 // ==================== 羁绊等级定义 ====================
 const BOND_LEVELS = [

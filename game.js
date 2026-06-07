@@ -157,17 +157,18 @@ const Game = (() => {
         const chat = CHAT_METHODS[sel.chatMethod];
         if (!ticket || !chat) return;
 
-        const w = ticket.weight || 1;  // 乘算权重
+        const w = ticket.weight;
 
-        // 经济 / 心情（聊天效果×权重）
+        // 经济 / 心情（聊天效果 × 权重）
+        const chatEff = weightedChatEffect(chat, w);
         state.economy -= ticket.cost.economy;
-        state.mood += ticket.effect.mood + chat.effect.mood * w;
-        const perIdolBond = methodBond + ticket.effect.bond + chat.effect.bond * w;
+        state.mood += ticket.effect.mood + chatEff.mood;
+        const perIdolBond = methodBond + ticket.effect.bond + chatEff.bond;
 
         idol.bond += perIdolBond;
         idol.bondLevel = getBondLevel(idol.bond);
 
-        // 偶像隐藏数值（聊天×权重）
+        // 偶像隐藏数值
         if (method.idolEffect) {
           idol.mental += method.idolEffect.mental || 0;
           idol.affection += method.idolEffect.affection || 0;
@@ -178,21 +179,18 @@ const Game = (() => {
           idol.affection += ticket.idolEffect.affection || 0;
           idol.attention += ticket.idolEffect.attention || 0;
         }
-        if (chat.idolEffect) {
-          idol.mental += (chat.idolEffect.mental || 0) * w;
-          idol.affection += (chat.idolEffect.affection || 0) * w;
-          idol.attention += (chat.idolEffect.attention || 0) * w;
-        }
+        idol.mental += chatEff.mental;
+        idol.affection += chatEff.affection;
+        idol.attention += chatEff.attention;
 
         // 聊舞台惩罚（同样加权）
         if (chat.penaltyCondition && chat.penaltyCondition(state)) {
-          state.mood += (chat.penalty.mood || 0) * w;
-          idol.bond = Math.max(0, idol.bond + (chat.penalty.bond || 0) * w);
-          if (chat.penaltyIdolEffect) {
-            idol.mental += (chat.penaltyIdolEffect.mental || 0) * w;
-            idol.affection += (chat.penaltyIdolEffect.affection || 0) * w;
-            idol.attention += (chat.penaltyIdolEffect.attention || 0) * w;
-          }
+          const pen = weightedChatPenalty(chat, w);
+          state.mood += pen.mood;
+          idol.bond = Math.max(0, idol.bond + pen.bond);
+          idol.mental += pen.mental;
+          idol.affection += pen.affection;
+          idol.attention += pen.attention;
           hasChatPenalty = true;
         }
 
@@ -424,11 +422,12 @@ const Game = (() => {
         const ticket = TICKET_TYPES[sel.ticketType];
         const chat = CHAT_METHODS[sel.chatMethod];
         if (ticket && chat) {
-          const w = ticket.weight || 1;
+          const chatEff = weightedChatEffect(chat, ticket.weight);
           economy += ticket.cost.economy;
-          mood += ticket.effect.mood + chat.effect.mood * w;
+          mood += ticket.effect.mood + chatEff.mood;
           if (chat.penaltyCondition && chat.penaltyCondition(state)) {
-            mood += (chat.penalty.mood || 0) * w;
+            const pen = weightedChatPenalty(chat, ticket.weight);
+            mood += pen.mood;
             showPenalty = true;
             penaltyDesc = chat.penaltyDesc || '';
           }
