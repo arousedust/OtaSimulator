@@ -74,6 +74,8 @@ const UI = (() => {
     resetTokutenEdit();
     hideTokutenConfigPanel();
     renderTokutenSelectionsBar(s);
+    // 清除所有卡片选中状态（防止残留）
+    $$('.choice-card').forEach(c => c.classList.remove('selected'));
     setPhase('week_decision');
     updateSummary(s);
   }
@@ -456,6 +458,7 @@ const UI = (() => {
         s.choices.participationMethod = null;
         s.choices.cheerTargetIds = [];
         s.choices.tokutenSelections = [];
+        $$('#action-step-method .choice-card').forEach(c => c.classList.remove('selected'));
         $('#cheer-targets-section').style.display = 'none';
         updateSummary(s);
       }
@@ -520,6 +523,8 @@ const UI = (() => {
       }
       showSettleScreen();
     } else {
+      // 周间过渡提示
+      await showWeekTransition(Game.getState());
       renderGameScreen();
     }
   }
@@ -569,6 +574,32 @@ const UI = (() => {
       const btn = $('#btn-event-continue');
       const handler = () => { overlay.classList.remove('active'); btn.removeEventListener('click', handler); resolve(); };
       btn.addEventListener('click', handler);
+    });
+  }
+
+  // ==================== 周末过渡 ====================
+  function showWeekTransition(s) {
+    return new Promise(resolve => {
+      // 创建简易过渡遮罩
+      const div = document.createElement('div');
+      div.className = 'week-transition';
+      div.innerHTML = `
+        <div class="week-transition-card">
+          <div class="week-transition-icon">📅</div>
+          <h3>第${s.turn}月 · 第${s.week}周 结束</h3>
+          <div class="week-transition-stats">
+            <span>💰 ${s.economy}</span>
+            <span>⚡ ${s.energy}/${s.energyCap}</span>
+            <span>💖 ${s.mood}</span>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(div);
+      // 动画后自动移除
+      setTimeout(() => {
+        div.classList.add('fade-out');
+        setTimeout(() => { div.remove(); resolve(); }, 400);
+      }, 800);
     });
   }
 
