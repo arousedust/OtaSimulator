@@ -595,9 +595,12 @@ html, body {
   transform: translateY(-2px);
   box-shadow: var(--glow-pink);
 }
-.tokuten-idol-card.selected {
+.tokuten-idol-card.configured {
+  border-color: var(--green);
+  background: rgba(46,213,115,.08);
+}
+.tokuten-idol-card.editing {
   border-color: var(--cyan);
-  background: rgba(0,229,255,.1);
   box-shadow: var(--glow-cyan);
 }
 .tokuten-idol-emoji { font-size: 24px; flex-shrink: 0; }
@@ -606,14 +609,103 @@ html, body {
   color: var(--text-1);
   flex: 1;
 }
-.tokuten-idol-card.selected .tokuten-idol-name { color: var(--cyan); }
+.tokuten-idol-tag {
+  font-size: 13px; color: var(--text-3);
+}
 .tokuten-idol-check {
   font-size: 16px; font-weight: 700;
   color: var(--green);
   opacity: 0;
   transition: var(--transition);
 }
-.tokuten-idol-card.selected .tokuten-idol-check { opacity: 1; }
+.tokuten-idol-card.configured .tokuten-idol-check { opacity: 1; }
+
+/* 特典配置面板 */
+.tokuten-config-panel {
+  padding: 20px;
+  background: rgba(26,27,58,.7);
+  border: 1px solid var(--cyan);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  animation: fadeSlideIn .3s ease;
+}
+.tokuten-config-header {
+  font-size: 15px; font-weight: 600;
+  color: var(--cyan);
+  margin-bottom: 16px;
+}
+.tokuten-config-actions {
+  display: flex; justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,107,157,.1);
+}
+
+/* 已配置列表 */
+.tokuten-selections-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 12px 16px;
+  background: rgba(26,27,58,.6);
+  border: 1px solid rgba(46,213,115,.2);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+.tokuten-sel-label {
+  font-size: 13px; color: var(--text-3);
+  white-space: nowrap;
+}
+.tokuten-sel-chip {
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 12px;
+  background: rgba(46,213,115,.08);
+  border: 1px solid rgba(46,213,115,.25);
+  border-radius: 20px;
+  font-size: 12px; color: var(--text-2);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.tokuten-sel-chip:hover { background: rgba(46,213,115,.15); }
+.tokuten-sel-remove {
+  cursor: pointer; color: var(--red);
+  font-weight: 700; margin-left: 4px;
+  font-size: 14px;
+}
+.tokuten-sel-remove:hover { color: #ff6b6b; }
+
+/* 相识偶像 */
+.known-idols-section {
+  margin-bottom: 16px;
+}
+.known-idols-section h3 {
+  font-size: 14px; color: var(--text-1);
+  margin-bottom: 8px;
+}
+.known-idols-list {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.known-idol-badge {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255,107,157,.08);
+  border: 1px solid rgba(255,107,157,.2);
+  border-radius: 20px;
+  font-size: 12px; color: var(--primary-2);
+}
+.known-idol-badge small {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* 应援切偶像 */
+.cheer-targets-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,107,157,.1);
+}
+.cheer-targets-title {
+  font-size: 14px; color: var(--text-2);
+  margin-bottom: 10px;
+}
 
 /* 特典选项行 */
 .tokuten-options-row {
@@ -636,53 +728,6 @@ html, body {
 /* 三列变体 */
 .choice-cards.three-col {
   grid-template-columns: repeat(3, 1fr);
-}
-
-/* 旧特典样式保留兼容 */
-.tokuten-layout {
-  display: flex; gap: 24px;
-  flex-wrap: wrap;
-}
-.tokuten-col {
-  flex: 1;
-  min-width: 200px;
-}
-.tokuten-col + .tokuten-col {
-  border-left: 1px solid rgba(255,107,157,.08);
-  padding-left: 24px;
-}
-.target-idol-select {
-  margin-top: 8px;
-}
-.target-idol-select label {
-  display: block;
-  font-size: 13px; color: var(--text-3);
-  margin-bottom: 8px;
-}
-.target-idol-options {
-  display: flex; gap: 8px;
-  flex-wrap: wrap;
-}
-.target-idol-btn {
-  padding: 10px 18px;
-  background: rgba(37,37,80,.5);
-  border: 2px solid rgba(0,229,255,.15);
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  font-family: var(--font);
-  font-size: 13px;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.target-idol-btn:hover {
-  border-color: var(--cyan);
-  box-shadow: var(--glow-cyan);
-}
-.target-idol-btn.selected {
-  border-color: var(--cyan);
-  background: rgba(0,229,255,.12);
-  color: var(--cyan);
-  box-shadow: var(--glow-cyan);
 }
 
 /* 特殊行动 */
@@ -1010,8 +1055,7 @@ html, body {
   .game-main { flex-direction: column; }
   .info-panel { width: 100%; border-left: none; border-top: 1px solid rgba(255,107,157,.1); max-height: 200px; }
   .game-title { font-size: 48px; }
-  .tokuten-layout { flex-direction: column; }
-  .tokuten-col + .tokuten-col { border-left: none; border-top: 1px solid rgba(255,107,157,.08); padding-left: 0; padding-top: 16px; }
+  .tokuten-options-row { flex-direction: column; }
 }
 
 @media (max-width: 600px) {
@@ -1022,4 +1066,5 @@ html, body {
   .target-idol-options { flex-direction: column; }
   .tokuten-idol-grid { grid-template-columns: repeat(2, 1fr); }
   .tokuten-options-row { flex-direction: column; }
+  .tokuten-config-panel { padding: 12px; }
 }
