@@ -824,6 +824,26 @@ html, body {
 .log-entry .log-turn { color: var(--gold); font-weight: 600; }
 
 /* ===========================
+   选择事件弹窗
+   =========================== */
+.choice-event-card {
+  width: 460px;
+}
+.choice-options {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-bottom: 8px;
+}
+.choice-option-btn {
+  width: 100%;
+  text-align: center;
+  background: rgba(255,107,157,.1);
+  border-color: rgba(255,107,157,.3);
+}
+.choice-option-btn:hover {
+  background: rgba(255,107,157,.2);
+}
+
+/* ===========================
    事件弹窗
    =========================== */
 .overlay {

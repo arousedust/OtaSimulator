@@ -278,25 +278,11 @@ const Game = (() => {
     }
 
     selected.forEach(evt => {
-      if (evt.effect) {
-        if (evt.effect.economy) state.economy += evt.effect.economy;
-        if (evt.effect.energy) state.energy += evt.effect.energy;
-        if (evt.effect.mood) state.mood += evt.effect.mood;
-      }
-      if (evt.idolEffect) {
-        const firstId = state.choices.tokutenSelections[0]?.idolId || state.idols[0]?.id;
-        const targetIdol = state.idols.find(i => i.id === firstId);
-        if (evt.idolEffect._all) {
-          state.idols.forEach(idol => {
-            if (evt.idolEffect._all.mental) idol.mental += evt.idolEffect._all.mental;
-            if (evt.idolEffect._all.affection) idol.affection += evt.idolEffect._all.affection;
-            if (evt.idolEffect._all.attention) idol.attention += evt.idolEffect._all.attention;
-          });
-        } else if (targetIdol) {
-          if (evt.idolEffect.mental) targetIdol.mental += evt.idolEffect.mental;
-          if (evt.idolEffect.affection) targetIdol.affection += evt.idolEffect.affection;
-          if (evt.idolEffect.attention) targetIdol.attention += evt.idolEffect.attention;
-        }
+      // 有choices的事件不自动结算，交由UI层处理
+      if (evt.choices) {
+        // 仅记录事件，效果在applyChoiceEvent中应用
+      } else {
+        applyEventEffect(evt, evt.effect, evt.idolEffect);
       }
       state.turnEvents.push(evt);
       state.eventLog.push({ turn: state.turn, name: evt.name, desc: evt.desc });
@@ -305,6 +291,55 @@ const Game = (() => {
     clampPlayerStats();
     state.idols.forEach(clampIdolStats);
     return selected;
+  }
+
+  // 应用事件效果
+  function applyEventEffect(evt, effect, idolEffect) {
+    if (effect) {
+      if (effect.economy) state.economy += effect.economy;
+      if (effect.energy) state.energy += effect.energy;
+      if (effect.mood) state.mood += effect.mood;
+    }
+    if (idolEffect) {
+      const firstId = state.choices.tokutenSelections[0]?.idolId || state.idols[0]?.id;
+      const targetIdol = state.idols.find(i => i.id === firstId);
+      if (idolEffect._all) {
+        state.idols.forEach(idol => {
+          if (idolEffect._all.mental) idol.mental += idolEffect._all.mental;
+          if (idolEffect._all.affection) idol.affection += idolEffect._all.affection;
+          if (idolEffect._all.attention) idol.attention += idolEffect._all.attention;
+        });
+      } else if (targetIdol) {
+        if (idolEffect.mental) targetIdol.mental += idolEffect.mental;
+        if (idolEffect.affection) targetIdol.affection += idolEffect.affection;
+        if (idolEffect.attention) targetIdol.attention += idolEffect.attention;
+      }
+    }
+  }
+
+  // 处理选择事件的选中项
+  function applyChoiceEvent(evt, choiceIndex) {
+    const choice = evt.choices[choiceIndex];
+    if (!choice) return null;
+    applyEventEffect(evt, choice.effect, choice.idolEffect);
+    // 解锁特殊行动
+    if (choice.specialUnlock && UNLOCKABLE_ACTIONS[choice.specialUnlock]) {
+      const action = UNLOCKABLE_ACTIONS[choice.specialUnlock];
+      if (!state.unlockedActions) state.unlockedActions = [];
+      if (!state.unlockedActions.find(a => a.id === action.id)) {
+        state.unlockedActions.push(action);
+      }
+    }
+    clampPlayerStats();
+    state.idols.forEach(clampIdolStats);
+    return choice;
+  }
+
+  // 获取当前可用特殊行动（基础+已解锁）
+  function getAvailableSpecialActions() {
+    const base = [];
+    const unlocked = state.unlockedActions || [];
+    return [...base, ...unlocked];
   }
 
   // ==================== 游戏结束检查 ====================
@@ -403,6 +438,6 @@ const Game = (() => {
     settleMonth, triggerEvents, nextMonth, determineEnding,
     calcWeekCost, checkGameOver, reset,
     getBondLevel, getBondLevelName, resetChoices,
-    addKnownIdol,
+    addKnownIdol, applyChoiceEvent, getAvailableSpecialActions,
   };
 })();

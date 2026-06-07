@@ -256,6 +256,17 @@
     </div>
   </div>
 
+  <!-- 选择事件弹窗 -->
+  <div id="overlay-choice" class="overlay">
+    <div class="overlay-backdrop"></div>
+    <div class="event-card choice-event-card">
+      <div id="choice-icon" class="event-icon">📢</div>
+      <h3 id="choice-title" class="event-title">事件标题</h3>
+      <p id="choice-desc" class="event-desc">事件描述...</p>
+      <div id="choice-options" class="choice-options"></div>
+    </div>
+  </div>
+
   <div id="overlay-chat-penalty" class="overlay">
     <div class="overlay-backdrop"></div>
     <div class="event-card penalty-card">
@@ -295,6 +306,7 @@
   </div>
 
   <script src="events-data.js"></script>
+  <script src="events-pool.js"></script>
   <script src="game.js"></script>
   <script src="ui.js"></script>
 </body>

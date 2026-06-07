@@ -512,7 +512,11 @@ const UI = (() => {
     if (nextResult.monthEnded) {
       if (nextResult.events && nextResult.events.length > 0) {
         for (const evt of nextResult.events) {
-          await showEventPopup(evt);
+          if (evt.choices) {
+            await showChoicePopup(evt);
+          } else {
+            await showEventPopup(evt);
+          }
         }
         updateTopBar(Game.getState());
         updateEventLog(Game.getState());
@@ -574,6 +578,37 @@ const UI = (() => {
       const btn = $('#btn-event-continue');
       const handler = () => { overlay.classList.remove('active'); btn.removeEventListener('click', handler); resolve(); };
       btn.addEventListener('click', handler);
+    });
+  }
+
+  // ==================== 选择事件弹窗 ====================
+  function showChoicePopup(evt) {
+    return new Promise(resolve => {
+      const overlay = $('#overlay-choice');
+      $('#choice-icon').textContent = evt.icon || '📢';
+      $('#choice-title').textContent = evt.name;
+      $('#choice-desc').textContent = evt.desc;
+
+      const optionsDiv = $('#choice-options');
+      optionsDiv.innerHTML = '';
+      evt.choices.forEach((choice, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'neon-btn choice-option-btn';
+        btn.textContent = choice.text;
+        btn.addEventListener('click', () => {
+          // 应用选择效果
+          const result = Game.applyChoiceEvent(evt, idx);
+          // 显示选择结果提示
+          if (result && result.desc) {
+            showToast(result.desc);
+          }
+          overlay.classList.remove('active');
+          resolve();
+        });
+        optionsDiv.appendChild(btn);
+      });
+
+      overlay.classList.add('active');
     });
   }
 
