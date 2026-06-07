@@ -197,11 +197,11 @@ const UI = (() => {
   }
 
   function updateChatPenaltyHint(s) {
+    // 聊舞台负面效果不再显式提示（隐藏惩罚）
     const stageCard = document.querySelector('[data-chat="stage"]');
     if (!stageCard) return;
     const hint = stageCard.querySelector('.penalty-hint');
-    if (!hint) return;
-    hint.style.display = s.choices.participationMethod === 'tokuten' ? 'block' : 'none';
+    if (hint) hint.style.display = 'none';
   }
 
   function addTokutenSelection() {
