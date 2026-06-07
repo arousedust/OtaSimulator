@@ -73,6 +73,8 @@ const TICKET_TYPES = {
     cost: { economy: 200 },
     effect: { mood: 5, bond: 3 },
     idolEffect: { mental: 1, affection: 3, attention: 1 },
+    weight: 1,          // 聊天效果乘算权重
+    eventChance: 0.05,  // 特典事件触发概率 5%
   },
   large: {
     name: '大券',
@@ -80,6 +82,8 @@ const TICKET_TYPES = {
     cost: { economy: 800 },
     effect: { mood: 10, bond: 8 },
     idolEffect: { mental: 2, affection: 6, attention: 2 },
+    weight: 3,
+    eventChance: 0.20,  // 20%
   },
   close: {
     name: '关门',
@@ -87,6 +91,8 @@ const TICKET_TYPES = {
     cost: { economy: 2000 },
     effect: { mood: 25, bond: 15 },
     idolEffect: { mental: 3, affection: 10, attention: 3 },
+    weight: 5,
+    eventChance: 0.80,  // 80%
   },
 };
 

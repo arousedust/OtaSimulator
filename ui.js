@@ -136,9 +136,7 @@ const UI = (() => {
     s.knownIdols.forEach(k => {
       const badge = document.createElement('span');
       badge.className = 'known-idol-badge';
-      const idol = s.idols.find(i => i.id === k.idolId);
-      const level = idol ? Game.getBondLevelName(idol.bondLevel) : '';
-      badge.innerHTML = `${k.emoji} ${k.name}${level ? ' <small>'+level+'</small>' : ''}`;
+      badge.innerHTML = `${k.emoji} ${k.name}`;
       list.appendChild(badge);
     });
   }
@@ -499,6 +497,12 @@ const UI = (() => {
     }
 
     Game.processWeek();
+
+    // 特典事件弹窗
+    const tokutenEvts = Game.getState()._tokutenEvents || [];
+    for (const tevt of tokutenEvts) {
+      await showEventPopup(tevt);
+    }
 
     if (Game.getState()._chatPenalty) {
       await showChatPenaltyPopup(Game.getState()._chatPenalty);

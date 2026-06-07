@@ -147,6 +147,8 @@ const Game = (() => {
 
     // ---- 非"只是看现场" → 特典 + 聊天（逐偶像独立配置） ----
     if (!method.skipTokuten && c.tokutenSelections.length > 0) {
+      state._tokutenEvents = [];  // 本回合触发的特典事件
+
       c.tokutenSelections.forEach(sel => {
         const idol = state.idols.find(i => i.id === sel.idolId);
         if (!idol) return;
@@ -155,15 +157,17 @@ const Game = (() => {
         const chat = CHAT_METHODS[sel.chatMethod];
         if (!ticket || !chat) return;
 
-        // 经济 / 心情（每个偶像独立消耗）
+        const w = ticket.weight || 1;  // 乘算权重
+
+        // 经济 / 心情（聊天效果×权重）
         state.economy -= ticket.cost.economy;
-        state.mood += ticket.effect.mood + chat.effect.mood;
-        const perIdolBond = methodBond + ticket.effect.bond + chat.effect.bond;
+        state.mood += ticket.effect.mood + chat.effect.mood * w;
+        const perIdolBond = methodBond + ticket.effect.bond + chat.effect.bond * w;
 
         idol.bond += perIdolBond;
         idol.bondLevel = getBondLevel(idol.bond);
 
-        // 偶像隐藏数值
+        // 偶像隐藏数值（聊天×权重）
         if (method.idolEffect) {
           idol.mental += method.idolEffect.mental || 0;
           idol.affection += method.idolEffect.affection || 0;
@@ -175,25 +179,40 @@ const Game = (() => {
           idol.attention += ticket.idolEffect.attention || 0;
         }
         if (chat.idolEffect) {
-          idol.mental += chat.idolEffect.mental || 0;
-          idol.affection += chat.idolEffect.affection || 0;
-          idol.attention += chat.idolEffect.attention || 0;
+          idol.mental += (chat.idolEffect.mental || 0) * w;
+          idol.affection += (chat.idolEffect.affection || 0) * w;
+          idol.attention += (chat.idolEffect.attention || 0) * w;
         }
 
-        // 聊舞台惩罚
+        // 聊舞台惩罚（同样加权）
         if (chat.penaltyCondition && chat.penaltyCondition(state)) {
-          state.mood += chat.penalty.mood || 0;
-          idol.bond = Math.max(0, idol.bond + (chat.penalty.bond || 0));
+          state.mood += (chat.penalty.mood || 0) * w;
+          idol.bond = Math.max(0, idol.bond + (chat.penalty.bond || 0) * w);
           if (chat.penaltyIdolEffect) {
-            idol.mental += chat.penaltyIdolEffect.mental || 0;
-            idol.affection += chat.penaltyIdolEffect.affection || 0;
-            idol.attention += chat.penaltyIdolEffect.attention || 0;
+            idol.mental += (chat.penaltyIdolEffect.mental || 0) * w;
+            idol.affection += (chat.penaltyIdolEffect.affection || 0) * w;
+            idol.attention += (chat.penaltyIdolEffect.attention || 0) * w;
           }
           hasChatPenalty = true;
         }
 
         // 加入相识列表
         addKnownIdol(sel.idolId);
+
+        // ★ 特典事件概率触发 ★
+        if (Math.random() < ticket.eventChance) {
+          const eligibleTokuten = TOKUTEN_EVENT_POOL.filter(te => {
+            if (state.turnEvents.some(t => t.id === te.id)) return false;
+            return te.condition(state);
+          });
+          if (eligibleTokuten.length > 0) {
+            const tevt = eligibleTokuten[Math.floor(Math.random() * eligibleTokuten.length)];
+            applyEventEffect(tevt, tevt.effect, tevt.idolEffect);
+            state.turnEvents.push(tevt);
+            state.eventLog.push({ turn: state.turn, name: tevt.name, desc: tevt.desc });
+            state._tokutenEvents.push(tevt);
+          }
+        }
       });
 
       if (hasChatPenalty) {
@@ -399,16 +418,17 @@ const Game = (() => {
     let showPenalty = false;
     let penaltyDesc = '';
 
-    // 逐偶像独立计算
+    // 逐偶像独立计算（聊天×权重）
     if (!method.skipTokuten) {
       c.tokutenSelections.forEach(sel => {
         const ticket = TICKET_TYPES[sel.ticketType];
         const chat = CHAT_METHODS[sel.chatMethod];
         if (ticket && chat) {
+          const w = ticket.weight || 1;
           economy += ticket.cost.economy;
-          mood += ticket.effect.mood + chat.effect.mood;
+          mood += ticket.effect.mood + chat.effect.mood * w;
           if (chat.penaltyCondition && chat.penaltyCondition(state)) {
-            mood += chat.penalty.mood || 0;
+            mood += (chat.penalty.mood || 0) * w;
             showPenalty = true;
             penaltyDesc = chat.penaltyDesc || '';
           }
