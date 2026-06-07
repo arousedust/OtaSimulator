@@ -1,0 +1,915 @@
+/* ============================
+   OTA模拟器 - 赛博朋克霓虹风格
+   ============================ */
+
+/* ---------- CSS 变量 ---------- */
+:root {
+  --primary-1: #FF6B9D;
+  --primary-2: #FF8EC7;
+  --primary-3: #FFB6D9;
+  --bg-1: #0D0D1A;
+  --bg-2: #1A1B3A;
+  --bg-3: #252550;
+  --text-1: #FFFFFF;
+  --text-2: #E0E0F0;
+  --text-3: #A0A0C0;
+  --gold: #FFD700;
+  --cyan: #00E5FF;
+  --red: #FF4757;
+  --green: #2ED573;
+  --glow-pink: 0 0 15px rgba(255,107,157,.5), 0 0 30px rgba(255,107,157,.25);
+  --glow-cyan: 0 0 15px rgba(0,229,255,.5), 0 0 30px rgba(0,229,255,.25);
+  --glow-gold: 0 0 15px rgba(255,215,0,.5), 0 0 30px rgba(255,215,0,.25);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: .3s cubic-bezier(.4,0,.2,1);
+  --font: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* ---------- Reset & Base ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text-2);
+  background: var(--bg-1);
+  overflow: hidden;
+}
+
+/* ---------- 背景粒子画布 ---------- */
+#bg-canvas {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ---------- 屏幕切换 ---------- */
+.screen {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .5s ease;
+  padding: 20px;
+  overflow-y: auto;
+}
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.screen-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-1);
+  text-shadow: var(--glow-pink);
+  margin-bottom: 8px;
+}
+.screen-desc {
+  color: var(--text-3);
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+/* ---------- 霓虹按钮 ---------- */
+.neon-btn {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 36px;
+  font-family: var(--font);
+  font-size: 16px; font-weight: 600;
+  color: var(--text-1);
+  background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+  border: 2px solid var(--primary-1);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  text-shadow: 0 0 8px rgba(255,107,157,.6);
+  box-shadow: var(--glow-pink);
+  outline: none;
+}
+.neon-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(255,107,157,.7), 0 0 50px rgba(255,107,157,.35);
+}
+.neon-btn:active { transform: translateY(0); }
+.neon-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.neon-btn.secondary {
+  background: transparent;
+  border-color: var(--cyan);
+  color: var(--cyan);
+  text-shadow: 0 0 8px rgba(0,229,255,.6);
+  box-shadow: var(--glow-cyan);
+}
+.neon-btn.secondary:hover {
+  box-shadow: 0 0 25px rgba(0,229,255,.7), 0 0 50px rgba(0,229,255,.35);
+}
+.neon-btn.small {
+  padding: 8px 20px;
+  font-size: 13px;
+}
+.neon-btn.pulse {
+  animation: btnPulse 2s infinite;
+}
+@keyframes btnPulse {
+  0%, 100% { box-shadow: var(--glow-pink); }
+  50% { box-shadow: 0 0 30px rgba(255,107,157,.8), 0 0 60px rgba(255,107,157,.4); }
+}
+
+/* ===========================
+   标题屏
+   =========================== */
+.title-content {
+  text-align: center;
+  z-index: 2;
+}
+.game-title {
+  font-size: 72px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+.title-ota {
+  color: var(--primary-1);
+  text-shadow: 0 0 20px rgba(255,107,157,.8), 0 0 60px rgba(255,107,157,.4);
+  animation: titleGlow 3s infinite alternate;
+}
+.title-sub {
+  color: var(--cyan);
+  text-shadow: var(--glow-cyan);
+}
+@keyframes titleGlow {
+  0% { text-shadow: 0 0 20px rgba(255,107,157,.8), 0 0 60px rgba(255,107,157,.4); }
+  100% { text-shadow: 0 0 40px rgba(255,107,157,1), 0 0 100px rgba(255,107,157,.6); }
+}
+.title-tagline {
+  font-size: 18px;
+  color: var(--text-3);
+  margin-bottom: 48px;
+  letter-spacing: 4px;
+}
+
+/* ===========================
+   角色选择屏
+   =========================== */
+.char-cards {
+  display: flex; gap: 40px;
+  margin-bottom: 32px;
+}
+.char-card {
+  position: relative;
+  width: 280px;
+  padding: 32px 24px;
+  background: linear-gradient(160deg, rgba(26,27,58,.9), rgba(37,37,80,.9));
+  border: 2px solid rgba(255,107,157,.15);
+  border-radius: var(--radius);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+.char-card-glow {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle at 50% 0%, rgba(255,107,157,.1), transparent 70%);
+  opacity: 0;
+  transition: var(--transition);
+}
+.char-card:hover, .char-card.selected {
+  transform: translateY(-8px);
+  border-color: var(--primary-1);
+  box-shadow: var(--glow-pink);
+}
+.char-card:hover .char-card-glow,
+.char-card.selected .char-card-glow { opacity: 1; }
+
+.char-icon { font-size: 48px; margin-bottom: 12px; }
+.char-name {
+  font-size: 24px; font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 16px;
+}
+.char-radar { margin-bottom: 16px; }
+.radar-bar {
+  display: flex; align-items: center;
+  margin-bottom: 6px;
+}
+.radar-label {
+  width: 40px; text-align: right;
+  font-size: 12px; color: var(--text-3);
+  margin-right: 8px;
+}
+.radar-fill {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--primary-1), var(--primary-2));
+  transition: width .6s ease;
+}
+.char-traits {
+  list-style: none;
+  text-align: left;
+}
+.char-traits li {
+  padding: 4px 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* ===========================
+   偶像选择屏
+   =========================== */
+.idol-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 24px;
+}
+.idol-card {
+  position: relative;
+  padding: 24px 16px;
+  background: linear-gradient(160deg, rgba(26,27,58,.9), rgba(37,37,80,.9));
+  border: 2px solid rgba(255,107,157,.15);
+  border-radius: var(--radius);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+}
+.idol-card:hover, .idol-card.selected {
+  transform: translateY(-4px);
+  border-color: var(--primary-1);
+  box-shadow: var(--glow-pink);
+}
+.idol-card.selected::after {
+  content: '✓';
+  position: absolute; top: 8px; right: 12px;
+  font-size: 20px;
+  color: var(--green);
+  text-shadow: 0 0 10px rgba(46,213,115,.6);
+}
+.idol-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  background: linear-gradient(135deg, var(--primary-1), var(--cyan));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+}
+.idol-card-name {
+  font-size: 18px; font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 4px;
+}
+.idol-card-desc {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.idol-selected-bar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 24px;
+  background: rgba(26,27,58,.8);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,107,157,.2);
+  backdrop-filter: blur(10px);
+}
+.idol-selected-label {
+  font-size: 14px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.idol-selected-list {
+  display: flex; gap: 8px;
+  flex: 1;
+  min-height: 32px;
+}
+.idol-selected-chip {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 12px;
+  background: rgba(255,107,157,.15);
+  border: 1px solid var(--primary-1);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--primary-2);
+}
+
+/* ===========================
+   主游戏面板
+   =========================== */
+#screen-game {
+  justify-content: flex-start;
+  padding: 0;
+}
+
+/* 顶部状态栏 */
+.game-topbar {
+  display: flex; align-items: center;
+  width: 100%;
+  padding: 12px 24px;
+  background: rgba(13,13,26,.95);
+  border-bottom: 1px solid rgba(255,107,157,.15);
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+  gap: 24px;
+}
+.turn-indicator {
+  display: flex; align-items: baseline; gap: 4px;
+  white-space: nowrap;
+}
+.turn-label { color: var(--text-3); font-size: 12px; }
+.turn-num {
+  font-size: 28px; font-weight: 700;
+  color: var(--gold);
+  text-shadow: var(--glow-gold);
+}
+.turn-total { color: var(--text-3); font-size: 14px; }
+
+.stat-bars {
+  display: flex; gap: 20px;
+  flex: 1;
+}
+.stat-item {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1;
+  max-width: 250px;
+}
+.stat-icon { font-size: 18px; }
+.stat-bar-wrap {
+  flex: 1; height: 10px;
+  background: rgba(255,255,255,.08);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.stat-bar {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--primary-1), var(--gold));
+  transition: width .6s ease;
+}
+.stat-bar-energy {
+  background: linear-gradient(90deg, var(--cyan), var(--green));
+}
+.stat-bar-mood {
+  background: linear-gradient(90deg, var(--primary-1), var(--primary-3));
+}
+.stat-val {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-1);
+  min-width: 55px;
+  text-align: right;
+}
+
+.idol-badges {
+  display: flex; gap: 8px;
+}
+.idol-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 12px;
+  background: rgba(255,107,157,.1);
+  border: 1px solid rgba(255,107,157,.3);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--primary-2);
+  cursor: default;
+}
+.idol-badge .bond-level {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* 主内容区 */
+.game-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* 左侧行动面板 */
+.action-panel {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 步骤指示器 */
+.action-steps {
+  display: flex; gap: 4px;
+  margin-bottom: 8px;
+}
+.step {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-3);
+  background: rgba(255,255,255,.03);
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.step.active {
+  color: var(--primary-1);
+  background: rgba(255,107,157,.12);
+  box-shadow: inset 0 -2px 0 var(--primary-1);
+}
+.step.completed {
+  color: var(--green);
+  background: rgba(46,213,115,.08);
+}
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  font-size: 11px; font-weight: 700;
+  background: rgba(255,255,255,.08);
+}
+.step.active .step-num {
+  background: var(--primary-1);
+  color: var(--bg-1);
+}
+.step.completed .step-num {
+  background: var(--green);
+  color: var(--bg-1);
+}
+
+/* 行动步骤内容 */
+.action-step {
+  display: none;
+  padding: 20px;
+  background: rgba(26,27,58,.6);
+  border: 1px solid rgba(255,107,157,.1);
+  border-radius: var(--radius);
+  animation: fadeSlideIn .3s ease;
+}
+.action-step.active { display: block; }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.action-step h3 {
+  font-size: 18px; font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 16px;
+}
+
+/* 滑块 */
+.slider-group {
+  margin-bottom: 12px;
+}
+.slider-group label {
+  display: block;
+  font-size: 13px; color: var(--text-3);
+  margin-bottom: 8px;
+}
+.slider-group input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%; height: 8px;
+  background: rgba(255,255,255,.08);
+  border-radius: 4px;
+  outline: none;
+}
+.slider-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--primary-1);
+  cursor: pointer;
+  box-shadow: var(--glow-pink);
+}
+.slider-labels {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text-3);
+  margin-top: 6px;
+}
+.step-hint {
+  font-size: 12px; color: var(--text-3);
+  margin-top: 8px;
+}
+
+/* 选择卡片 */
+.choice-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+.choice-card {
+  padding: 16px 12px;
+  background: rgba(37,37,80,.5);
+  border: 2px solid rgba(255,107,157,.1);
+  border-radius: var(--radius);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.choice-card:hover {
+  border-color: var(--primary-1);
+  transform: translateY(-2px);
+  box-shadow: var(--glow-pink);
+}
+.choice-card.selected {
+  border-color: var(--primary-1);
+  background: rgba(255,107,157,.12);
+  box-shadow: var(--glow-pink);
+}
+.choice-icon { font-size: 28px; margin-bottom: 8px; }
+.choice-card h4 {
+  font-size: 14px; font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 6px;
+}
+.choice-cost {
+  font-size: 12px;
+  color: var(--red);
+  margin-bottom: 2px;
+}
+.choice-effect {
+  font-size: 12px;
+  color: var(--green);
+}
+.choice-card.disabled {
+  opacity: .35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 特典区域 */
+.tokuten-section {
+  display: flex; flex-direction: column; gap: 20px;
+}
+.target-idol-select {
+  margin-top: 8px;
+}
+.target-idol-select label {
+  display: block;
+  font-size: 13px; color: var(--text-3);
+  margin-bottom: 8px;
+}
+.target-idol-options {
+  display: flex; gap: 12px;
+  flex-wrap: wrap;
+}
+.target-idol-btn {
+  padding: 10px 20px;
+  background: rgba(37,37,80,.5);
+  border: 2px solid rgba(0,229,255,.15);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-family: var(--font);
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.target-idol-btn:hover {
+  border-color: var(--cyan);
+  box-shadow: var(--glow-cyan);
+}
+.target-idol-btn.selected {
+  border-color: var(--cyan);
+  background: rgba(0,229,255,.12);
+  color: var(--cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+/* 特殊行动 */
+.special-actions-list {
+  margin-bottom: 12px;
+}
+
+/* 消耗总览 */
+.action-summary {
+  padding: 20px;
+  background: rgba(26,27,58,.6);
+  border: 1px solid rgba(255,107,157,.1);
+  border-radius: var(--radius);
+  margin-top: auto;
+}
+.action-summary h3 {
+  font-size: 16px; font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 12px;
+}
+.summary-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 24px;
+  margin-bottom: 16px;
+}
+.summary-row {
+  display: flex; justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.summary-row span:last-child { color: var(--text-2); font-weight: 600; }
+.summary-row.total span:last-child { color: var(--text-1); }
+.summary-divider {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: rgba(255,107,157,.15);
+  margin: 4px 0;
+}
+.action-nav {
+  display: flex; gap: 12px;
+  justify-content: flex-end;
+}
+
+/* 右侧信息面板 */
+.info-panel {
+  width: 280px;
+  padding: 20px;
+  background: rgba(13,13,26,.6);
+  border-left: 1px solid rgba(255,107,157,.1);
+  display: flex; flex-direction: column; gap: 20px;
+  overflow-y: auto;
+}
+.info-panel h3 {
+  font-size: 14px; font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 8px;
+}
+.info-block p {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+.info-block span { color: var(--text-2); font-weight: 600; }
+.event-log-section { flex: 1; }
+.event-log {
+  max-height: 300px;
+  overflow-y: auto;
+}
+.log-empty {
+  font-size: 12px; color: var(--text-3);
+  font-style: italic;
+}
+.log-entry {
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background: rgba(37,37,80,.4);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--primary-1);
+  font-size: 12px;
+  color: var(--text-3);
+}
+.log-entry .log-turn { color: var(--gold); font-weight: 600; }
+
+/* ===========================
+   事件弹窗
+   =========================== */
+.overlay {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s ease;
+}
+.overlay.active {
+  opacity: 1; pointer-events: auto;
+}
+.overlay-backdrop {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(4px);
+}
+.event-card {
+  position: relative;
+  width: 420px; max-width: 90vw;
+  padding: 32px;
+  background: linear-gradient(160deg, rgba(26,27,58,.97), rgba(37,37,80,.97));
+  border: 2px solid var(--primary-1);
+  border-radius: var(--radius);
+  box-shadow: var(--glow-pink), 0 20px 60px rgba(0,0,0,.5);
+  text-align: center;
+  animation: cardSlideIn .4s ease;
+  z-index: 1;
+}
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(30px) scale(.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.event-icon { font-size: 48px; margin-bottom: 12px; }
+.event-title {
+  font-size: 22px; font-weight: 700;
+  color: var(--text-1);
+  text-shadow: var(--glow-pink);
+  margin-bottom: 12px;
+}
+.event-desc {
+  font-size: 14px;
+  color: var(--text-3);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.event-effects {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+  margin-bottom: 20px;
+}
+.effect-tag {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+}
+.effect-tag.positive {
+  background: rgba(46,213,115,.15);
+  color: var(--green);
+  border: 1px solid rgba(46,213,115,.3);
+}
+.effect-tag.negative {
+  background: rgba(255,71,87,.15);
+  color: var(--red);
+  border: 1px solid rgba(255,71,87,.3);
+}
+
+/* ===========================
+   回合结算屏
+   =========================== */
+.settle-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%; max-width: 500px;
+}
+.settle-stat {
+  padding: 16px;
+  background: rgba(26,27,58,.8);
+  border: 1px solid rgba(255,107,157,.15);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.settle-stat-label {
+  display: block;
+  font-size: 13px; color: var(--text-3);
+  margin-bottom: 4px;
+}
+.settle-stat-val {
+  font-size: 28px; font-weight: 700;
+  color: var(--text-1);
+}
+.settle-delta {
+  display: block;
+  font-size: 13px; font-weight: 600;
+}
+.settle-delta.positive { color: var(--green); }
+.settle-delta.negative { color: var(--red); }
+
+.settle-events { margin-bottom: 24px; }
+.settle-event-list {
+  list-style: none;
+  text-align: left;
+}
+.settle-event-list li {
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  background: rgba(37,37,80,.4);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-3);
+  border-left: 3px solid var(--primary-1);
+}
+
+/* ===========================
+   结局屏
+   =========================== */
+.ending-content {
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+  z-index: 2;
+}
+.ending-title {
+  font-size: 42px; font-weight: 700;
+  color: var(--gold);
+  text-shadow: var(--glow-gold);
+  margin-bottom: 16px;
+  animation: titleGlow 2s infinite alternate;
+}
+.ending-desc {
+  font-size: 16px; color: var(--text-2);
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+.ending-reason {
+  font-size: 14px; color: var(--red);
+  padding: 12px;
+  background: rgba(255,71,87,.1);
+  border: 1px solid rgba(255,71,87,.3);
+  border-radius: var(--radius-sm);
+  margin-bottom: 24px;
+}
+.ending-stats {
+  text-align: left;
+  margin-bottom: 32px;
+}
+.ending-stats h3 {
+  font-size: 16px; font-weight: 600;
+  color: var(--text-1);
+  margin: 16px 0 8px;
+  border-bottom: 1px solid rgba(255,107,157,.15);
+  padding-bottom: 4px;
+}
+.ending-player-stats,
+.ending-idol-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.ending-stat-item {
+  display: flex; justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(26,27,58,.6);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+.ending-stat-item .label { color: var(--text-3); }
+.ending-stat-item .value { color: var(--text-1); font-weight: 600; }
+.ending-idol-card {
+  grid-column: 1 / -1;
+  padding: 16px;
+  background: rgba(37,37,80,.4);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,107,157,.15);
+  margin-bottom: 8px;
+}
+.ending-idol-name {
+  font-size: 16px; font-weight: 600;
+  color: var(--primary-2);
+  margin-bottom: 8px;
+}
+.ending-idol-details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.ending-hidden-stat {
+  text-align: center;
+  padding: 6px;
+  background: rgba(255,255,255,.03);
+  border-radius: var(--radius-sm);
+}
+.ending-hidden-stat .stat-name {
+  font-size: 11px; color: var(--text-3);
+  display: block;
+}
+.ending-hidden-stat .stat-value {
+  font-size: 18px; font-weight: 700;
+}
+.ending-hidden-stat .stat-value.low { color: var(--red); }
+.ending-hidden-stat .stat-value.mid { color: var(--gold); }
+.ending-hidden-stat .stat-value.high { color: var(--green); }
+
+/* ===========================
+   浮动数值动画
+   =========================== */
+.float-number {
+  position: fixed;
+  font-size: 18px; font-weight: 700;
+  pointer-events: none;
+  z-index: 200;
+  animation: floatUp 1.2s ease-out forwards;
+}
+.float-number.positive { color: var(--green); text-shadow: 0 0 10px rgba(46,213,115,.5); }
+.float-number.negative { color: var(--red); text-shadow: 0 0 10px rgba(255,71,87,.5); }
+@keyframes floatUp {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-60px); }
+}
+
+/* ===========================
+   响应式
+   =========================== */
+@media (max-width: 900px) {
+  .char-cards { flex-direction: column; align-items: center; gap: 20px; }
+  .char-card { width: 100%; max-width: 320px; }
+  .game-main { flex-direction: column; }
+  .info-panel { width: 100%; border-left: none; border-top: 1px solid rgba(255,107,157,.1); max-height: 200px; }
+  .game-title { font-size: 48px; }
+  .idol-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .idol-grid { grid-template-columns: 1fr; }
+  .choice-cards { grid-template-columns: 1fr 1fr; }
+  .action-steps { flex-wrap: wrap; }
+  .stat-bars { flex-direction: column; gap: 8px; }
+  .game-topbar { flex-wrap: wrap; }
+}

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTA模拟器 - 偶像宅的25个月</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- ==================== 标题屏 ==================== -->
+  <div id="screen-title" class="screen active">
+    <div class="title-content">
+      <h1 class="game-title">
+        <span class="title-ota">OTA</span><span class="title-sub">模拟器</span>
+      </h1>
+      <p class="title-tagline">偶像宅的25个月</p>
+      <button id="btn-start" class="neon-btn pulse">
+        <span>开始游戏</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== 角色选择屏 ==================== -->
+  <div id="screen-char-select" class="screen">
+    <h2 class="screen-title">选择你的身份</h2>
+    <p class="screen-desc">不同的身份将影响你的初始数值与每月消耗</p>
+    <div class="char-cards">
+      <div class="char-card" data-char="worker">
+        <div class="char-card-glow"></div>
+        <div class="char-icon">💼</div>
+        <h3 class="char-name">社畜</h3>
+        <div class="char-radar">
+          <div class="radar-bar"><span class="radar-label">经济</span><div class="radar-fill" data-stat="economy" style="width:80%"></div></div>
+          <div class="radar-bar"><span class="radar-label">精力</span><div class="radar-fill" data-stat="energy" style="width:40%"></div></div>
+          <div class="radar-bar"><span class="radar-label">心情</span><div class="radar-fill" data-stat="mood" style="width:50%"></div></div>
+        </div>
+        <ul class="char-traits">
+          <li>💰 经济充裕</li>
+          <li>⚡ 精力有限</li>
+          <li>😔 心情消耗大</li>
+        </ul>
+      </div>
+      <div class="char-card" data-char="student">
+        <div class="char-card-glow"></div>
+        <div class="char-icon">🎓</div>
+        <h3 class="char-name">学生</h3>
+        <div class="char-radar">
+          <div class="radar-bar"><span class="radar-label">经济</span><div class="radar-fill" data-stat="economy" style="width:35%"></div></div>
+          <div class="radar-bar"><span class="radar-label">精力</span><div class="radar-fill" data-stat="energy" style="width:80%"></div></div>
+          <div class="radar-bar"><span class="radar-label">心情</span><div class="radar-fill" data-stat="mood" style="width:70%"></div></div>
+        </div>
+        <ul class="char-traits">
+          <li>💰 经济拮据</li>
+          <li>⚡ 精力充沛</li>
+          <li>😊 心情消耗少</li>
+        </ul>
+      </div>
+    </div>
+    <button id="btn-char-confirm" class="neon-btn" disabled>确认选择</button>
+  </div>
+
+  <!-- ==================== 偶像选择屏 ==================== -->
+  <div id="screen-idol-select" class="screen">
+    <h2 class="screen-title">选择你的推</h2>
+    <p class="screen-desc">选择1~3位你想推的偶像</p>
+    <div id="idol-grid" class="idol-grid">
+      <!-- 动态填充 -->
+    </div>
+    <div class="idol-selected-bar">
+      <span class="idol-selected-label">已选：</span>
+      <div id="idol-selected-list" class="idol-selected-list"></div>
+      <button id="btn-idol-confirm" class="neon-btn" disabled>确认选择</button>
+    </div>
+  </div>
+
+  <!-- ==================== 主游戏面板 ==================== -->
+  <div id="screen-game" class="screen">
+    <!-- 顶部状态栏 -->
+    <div class="game-topbar">
+      <div class="turn-indicator">
+        <span class="turn-label">回合</span>
+        <span id="turn-num" class="turn-num">1</span>
+        <span class="turn-total">/25</span>
+      </div>
+      <div class="stat-bars">
+        <div class="stat-item" data-stat="economy">
+          <span class="stat-icon">💰</span>
+          <div class="stat-bar-wrap">
+            <div id="stat-bar-economy" class="stat-bar" style="width:70%"></div>
+          </div>
+          <span id="stat-val-economy" class="stat-val">5000</span>
+        </div>
+        <div class="stat-item" data-stat="energy">
+          <span class="stat-icon">⚡</span>
+          <div class="stat-bar-wrap">
+            <div id="stat-bar-energy" class="stat-bar stat-bar-energy" style="width:100%"></div>
+          </div>
+          <span id="stat-val-energy" class="stat-val">60/60</span>
+        </div>
+        <div class="stat-item" data-stat="mood">
+          <span class="stat-icon">💖</span>
+          <div class="stat-bar-wrap">
+            <div id="stat-bar-mood" class="stat-bar stat-bar-mood" style="width:70%"></div>
+          </div>
+          <span id="stat-val-mood" class="stat-val">70</span>
+        </div>
+      </div>
+      <div id="idol-badges" class="idol-badges">
+        <!-- 动态填充偶像头像+羁绊等级 -->
+      </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="game-main">
+      <!-- 左侧：行动选择区 -->
+      <div class="action-panel">
+        <!-- 步骤指示器 -->
+        <div id="action-steps" class="action-steps">
+          <div class="step active" data-step="1"><span class="step-num">1</span>偶活次数</div>
+          <div class="step" data-step="2"><span class="step-num">2</span>参与方式</div>
+          <div class="step" data-step="3"><span class="step-num">3</span>特典券&偶像</div>
+          <div class="step" data-step="4"><span class="step-num">4</span>特典方式</div>
+          <div class="step" data-step="5"><span class="step-num">5</span>特殊行动</div>
+        </div>
+
+        <!-- 步骤1：偶活次数 -->
+        <div id="action-step-1" class="action-step active">
+          <h3>本月参与偶活次数</h3>
+          <div class="slider-group">
+            <input type="range" id="activity-count" min="0" max="4" value="1" step="1">
+            <div class="slider-labels">
+              <span>0次</span><span>1次</span><span>2次</span><span>3次</span><span>4次</span>
+            </div>
+          </div>
+          <p class="step-hint">每次偶活消耗精力和经济，注意量力而行</p>
+        </div>
+
+        <!-- 步骤2：参与方式 -->
+        <div id="action-step-2" class="action-step">
+          <h3>参与偶活的方式</h3>
+          <div class="choice-cards">
+            <div class="choice-card" data-method="cheer">
+              <div class="choice-icon">📣</div>
+              <h4>现场应援</h4>
+              <p class="choice-cost">经济-500 / 精力-15</p>
+              <p class="choice-effect">心情+20 / 羁绊+5</p>
+            </div>
+            <div class="choice-card" data-method="photo">
+              <div class="choice-icon">📸</div>
+              <h4>拍照返图</h4>
+              <p class="choice-cost">经济-300 / 精力-10</p>
+              <p class="choice-effect">心情+12 / 羁绊+3</p>
+            </div>
+            <div class="choice-card" data-method="watch">
+              <div class="choice-icon">👀</div>
+              <h4>只是看现场</h4>
+              <p class="choice-cost">经济-200 / 精力-5</p>
+              <p class="choice-effect">心情+8 / 羁绊+1</p>
+            </div>
+            <div class="choice-card" data-method="tokuten">
+              <div class="choice-icon">🎫</div>
+              <h4>只参与特典</h4>
+              <p class="choice-cost">经济-100 / 精力-3</p>
+              <p class="choice-effect">心情+3 / 羁绊+2</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 步骤3：特典券&目标偶像 -->
+        <div id="action-step-3" class="action-step">
+          <h3>特典券张数 & 目标偶像</h3>
+          <div class="tokuten-section">
+            <div class="slider-group">
+              <label>特典券张数</label>
+              <input type="range" id="ticket-count" min="0" max="5" value="0" step="1">
+              <div class="slider-labels">
+                <span>0张</span><span>1张</span><span>2张</span><span>3张</span><span>4张</span><span>5张</span>
+              </div>
+              <p class="step-hint">每张特典券消耗经济800</p>
+            </div>
+            <div id="target-idol-select" class="target-idol-select">
+              <label>去找哪位偶像</label>
+              <div id="target-idol-options" class="target-idol-options">
+                <!-- 动态填充 -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 步骤4：特典方式 -->
+        <div id="action-step-4" class="action-step">
+          <h3>特典参与方式</h3>
+          <div class="choice-cards">
+            <div class="choice-card" data-tokuten="none">
+              <div class="choice-icon">🚫</div>
+              <h4>不参与特典</h4>
+              <p class="choice-cost">无消耗</p>
+              <p class="choice-effect">无额外收益</p>
+            </div>
+            <div class="choice-card" data-tokuten="small">
+              <div class="choice-icon">🎫</div>
+              <h4>小券</h4>
+              <p class="choice-cost">经济-200</p>
+              <p class="choice-effect">心情+5 / 羁绊+3</p>
+            </div>
+            <div class="choice-card" data-tokuten="multi">
+              <div class="choice-icon">🎫🎫</div>
+              <h4>多券</h4>
+              <p class="choice-cost">经济-800</p>
+              <p class="choice-effect">心情+10 / 羁绊+8</p>
+            </div>
+            <div class="choice-card" data-tokuten="close">
+              <div class="choice-icon">🌟</div>
+              <h4>关门</h4>
+              <p class="choice-cost">经济-2000</p>
+              <p class="choice-effect">心情+25 / 羁绊+15</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 步骤5：特殊行动 -->
+        <div id="action-step-5" class="action-step">
+          <h3>特殊行动</h3>
+          <div id="special-actions-list" class="special-actions-list">
+            <p class="step-hint">本月无可用特殊行动</p>
+          </div>
+          <button id="btn-skip-special" class="neon-btn secondary small">跳过</button>
+        </div>
+
+        <!-- 消耗总览 & 确认 -->
+        <div class="action-summary">
+          <h3>本月消耗总览</h3>
+          <div id="summary-details" class="summary-details">
+            <div class="summary-row"><span>偶活次数</span><span id="sum-activity">0</span></div>
+            <div class="summary-row"><span>参与方式</span><span id="sum-method">-</span></div>
+            <div class="summary-row"><span>特典券</span><span id="sum-tickets">0张</span></div>
+            <div class="summary-row"><span>目标偶像</span><span id="sum-idol">-</span></div>
+            <div class="summary-row"><span>特典方式</span><span id="sum-tokuten">-</span></div>
+            <div class="summary-divider"></div>
+            <div class="summary-row total"><span>经济消耗</span><span id="sum-cost-economy">0</span></div>
+            <div class="summary-row total"><span>精力消耗</span><span id="sum-cost-energy">0</span></div>
+            <div class="summary-row total"><span>预计心情</span><span id="sum-gain-mood">+0</span></div>
+            <div class="summary-row total"><span>预计羁绊</span><span id="sum-gain-bond">+0</span></div>
+          </div>
+          <div id="action-nav" class="action-nav">
+            <button id="btn-prev-step" class="neon-btn secondary" style="display:none">上一步</button>
+            <button id="btn-next-step" class="neon-btn">下一步</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧：信息区 -->
+      <div class="info-panel">
+        <div class="month-info">
+          <h3>本月信息</h3>
+          <div id="month-recovery" class="info-block">
+            <p>💰 经济恢复：<span id="rec-economy">+3000</span></p>
+            <p>⚡ 精力恢复：<span id="rec-energy">+40</span></p>
+            <p>😔 心情月耗：<span id="drain-mood">-15</span></p>
+          </div>
+        </div>
+        <div class="event-log-section">
+          <h3>事件日志</h3>
+          <div id="event-log" class="event-log">
+            <p class="log-empty">尚无事件记录</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 事件弹窗 ==================== -->
+  <div id="overlay-event" class="overlay">
+    <div class="overlay-backdrop"></div>
+    <div class="event-card">
+      <div id="event-icon" class="event-icon">📢</div>
+      <h3 id="event-title" class="event-title">事件标题</h3>
+      <p id="event-desc" class="event-desc">事件描述...</p>
+      <div id="event-effects" class="event-effects">
+        <!-- 动态填充数值变化 -->
+      </div>
+      <button id="btn-event-continue" class="neon-btn">继续</button>
+    </div>
+  </div>
+
+  <!-- ==================== 回合结算屏 ==================== -->
+  <div id="screen-settle" class="screen">
+    <h2 class="screen-title">回合结算</h2>
+    <div class="settle-stats">
+      <div class="settle-stat">
+        <span class="settle-stat-label">💰 经济</span>
+        <span id="settle-economy" class="settle-stat-val">5000</span>
+        <span id="settle-economy-delta" class="settle-delta"></span>
+      </div>
+      <div class="settle-stat">
+        <span class="settle-stat-label">⚡ 精力</span>
+        <span id="settle-energy" class="settle-stat-val">60</span>
+        <span id="settle-energy-delta" class="settle-delta"></span>
+      </div>
+      <div class="settle-stat">
+        <span class="settle-stat-label">💖 心情</span>
+        <span id="settle-mood" class="settle-stat-val">70</span>
+        <span id="settle-mood-delta" class="settle-delta"></span>
+      </div>
+      <div class="settle-stat">
+        <span class="settle-stat-label">💕 羁绊</span>
+        <span id="settle-bond" class="settle-stat-val">0</span>
+        <span id="settle-bond-delta" class="settle-delta"></span>
+      </div>
+    </div>
+    <div class="settle-events">
+      <h3>本月事件</h3>
+      <ul id="settle-event-list" class="settle-event-list"></ul>
+    </div>
+    <button id="btn-next-turn" class="neon-btn">进入下月</button>
+  </div>
+
+  <!-- ==================== 结局屏 ==================== -->
+  <div id="screen-ending" class="screen">
+    <div class="ending-content">
+      <h2 id="ending-title" class="ending-title">结局名称</h2>
+      <p id="ending-desc" class="ending-desc">结局描述...</p>
+      <div id="ending-reason" class="ending-reason" style="display:none"></div>
+      <div class="ending-stats">
+        <h3>最终数值</h3>
+        <div id="ending-player-stats" class="ending-player-stats"></div>
+        <h3>偶像状态揭秘</h3>
+        <div id="ending-idol-stats" class="ending-idol-stats"></div>
+      </div>
+      <button id="btn-restart" class="neon-btn">重新开始</button>
+    </div>
+  </div>
+
+  <!-- 脚本 -->
+  <script src="events-data.js"></script>
+  <script src="game.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
