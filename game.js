@@ -29,12 +29,13 @@ const Game = (() => {
       energyCap: config.energy.cap,
       mood: config.mood.initial,
       idols: idols,
-      knownIdols: [],            // 特典会相识的偶像 [{idolId, name, emoji, bond}]
+      knownIdols: [],
+      playerStatuses: [],       // 玩家当前状态 [{id,name,icon,remaining,...}]
       choices: {
         participate: null,
         participationMethod: null,
-        tokutenSelections: [],   // [{idolId, ticketType, chatMethod}]
-        cheerTargetIds: [],      // 现场应援切偶像（多选已知偶像）
+        tokutenSelections: [],
+        cheerTargetIds: [],
       },
       modifiers: {
         economyRecoveryMod: 1,
@@ -117,6 +118,10 @@ const Game = (() => {
     state.modifiers = { economyRecoveryMod: 1, energyRecoveryMod: 1, moodDrainMod: 1 };
     state.week = 1;
     state.turnEvents = [];
+
+    // ★ 结算玩家状态效果
+    tickPlayerStatuses(state);
+
     state.phase = 'week_decision';
     resetChoices();
     clampPlayerStats();
@@ -271,6 +276,10 @@ const Game = (() => {
     state.idols.forEach(idol => {
       idol.bondLevel = getBondLevel(idol.bond);
     });
+
+    // ★ 结算偶像状态效果
+    tickIdolStatuses(state);
+
     // 微幅衰减
     state.idols.forEach(idol => {
       idol.attention = Math.max(0, idol.attention - 4);
