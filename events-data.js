@@ -28,6 +28,10 @@ const IDOL_POOL = [
   { id: 'idol_6', name: '翡翠琉璃', desc: '神秘大人气偶像', emoji: '💎', mental: 75, affection: 30, attention: 90 },
 ];
 
+// ==================== WEEKS_PER_MONTH ====================
+const WEEKS_PER_MONTH = 4;
+const TOTAL_MONTHS = 25;
+
 // ==================== 参与方式消耗表 ====================
 const PARTICIPATION_METHODS = {
   cheer: {
@@ -50,6 +54,7 @@ const PARTICIPATION_METHODS = {
     cost: { economy: 200, energy: 5 },
     effect: { mood: 8, bond: 1 },
     idolEffect: { mental: 0, affection: 1, attention: 1 },
+    skipTokuten: true,  // 不进入特典环节
   },
   tokuten: {
     name: '只参与特典',
@@ -60,15 +65,8 @@ const PARTICIPATION_METHODS = {
   },
 };
 
-// ==================== 特典方式消耗表 ====================
-const TOKUTEN_METHODS = {
-  none: {
-    name: '不参与特典',
-    emoji: '🚫',
-    cost: { economy: 0 },
-    effect: { mood: 0, bond: 0 },
-    idolEffect: { mental: 0, affection: 0, attention: 0 },
-  },
+// ==================== 特典买券方式（3种） ====================
+const TICKET_TYPES = {
   small: {
     name: '小券',
     emoji: '🎫',
@@ -76,9 +74,9 @@ const TOKUTEN_METHODS = {
     effect: { mood: 5, bond: 3 },
     idolEffect: { mental: 1, affection: 3, attention: 1 },
   },
-  multi: {
-    name: '多券',
-    emoji: '🎫🎫',
+  large: {
+    name: '大券',
+    emoji: '🎟️',
     cost: { economy: 800 },
     effect: { mood: 10, bond: 8 },
     idolEffect: { mental: 2, affection: 6, attention: 2 },
@@ -92,8 +90,49 @@ const TOKUTEN_METHODS = {
   },
 };
 
-// ==================== 特典券价格 ====================
-const TICKET_PRICE = 800;
+// ==================== 聊天方式 ====================
+const CHAT_METHODS = {
+  casual: {
+    name: '随便聊聊',
+    emoji: '💬',
+    cost: { economy: 0 },
+    effect: { mood: 3, bond: 2 },
+    idolEffect: { mental: 1, affection: 2, attention: 1 },
+  },
+  values: {
+    name: '聊价值观',
+    emoji: '🤔',
+    cost: { economy: 0 },
+    effect: { mood: 5, bond: 4 },
+    idolEffect: { mental: 0, affection: 5, attention: 0 },
+  },
+  hobbies: {
+    name: '聊兴趣爱好',
+    emoji: '🎮',
+    cost: { economy: 0 },
+    effect: { mood: 4, bond: 3 },
+    idolEffect: { mental: 3, affection: 3, attention: 1 },
+  },
+  stage: {
+    name: '聊舞台',
+    emoji: '🎤',
+    cost: { economy: 0 },
+    effect: { mood: 8, bond: 5 },
+    idolEffect: { mental: 5, affection: 3, attention: 3 },
+    // 如果参与方式是"只参与特典"则有负面效果
+    penaltyCondition: (s) => s.choices.participationMethod === 'tokuten',
+    penalty: { mood: -8, bond: -5 },
+    penaltyIdolEffect: { mental: -8, affection: -8, attention: -5 },
+    penaltyDesc: '（只来特典会却谈舞台话题，对方感到困惑...）',
+  },
+  demand: {
+    name: '要求对应',
+    emoji: '💪',
+    cost: { economy: 0 },
+    effect: { mood: 6, bond: 7 },
+    idolEffect: { mental: -2, affection: 6, attention: 2 },
+  },
+};
 
 // ==================== 羁绊等级定义 ====================
 const BOND_LEVELS = [
@@ -324,24 +363,16 @@ const EVENT_POOL = [
 
 // ==================== 特殊行动定义（扩展位） ====================
 const SPECIAL_ACTIONS = [
-  // 预留扩展位，后续可添加：
-  // { id: 'buy_merch', name: '购买周边', desc: '花费经济购买偶像周边',
-  //   cost: { economy: 500, energy: 5 }, effect: { mood: 10, bond: 3 },
-  //   idolEffect: { affection: 2 },
-  //   condition: (state) => state.economy >= 500 },
+  // 预留扩展位
 ];
 
 // ==================== 提前结束触发器（扩展位） ====================
 const EARLY_END_TRIGGERS = [
   // 预留扩展位
-  // { id: 'idol_retire', name: '偶像引退',
-  //   condition: (state) => state.idols.filter(i => i.mental <= 0 || i.affection <= 0).length >= 2,
-  //   reason: '太多偶像倒下了，你的应援之路就此终结...' },
 ];
 
 // ==================== 结局定义 ====================
 const ENDINGS = {
-  // 提前结束结局
   early_economy: {
     title: '破产离场',
     desc: '经济完全枯竭，连最基本的应援都无法维持。你不得不退出偶像宅的世界，回归平凡生活。也许有一天，你会重新回来...',
@@ -367,8 +398,6 @@ const ENDINGS = {
     desc: '一个意想不到的事件改变了一切...',
     isEarly: true,
   },
-
-  // 正常结局
   legend: {
     title: '传说之推',
     desc: '25个月的应援之路，你和偶像之间建立了超越粉丝与偶像的羁绊。她知道你的名字，记住你的脸，在人群中一眼就能找到你。这不只是应援，这是命中注定的相遇。',
@@ -397,6 +426,6 @@ const ENDINGS = {
     title: '迷途之羊',
     desc: '25个月过去了，你既没有建立深厚的羁绊，也没有找到应援的意义。偶像的世界对你来说，仍然是遥不可及的星光。',
     isEarly: false,
-    condition: () => true, // 默认结局
+    condition: () => true,
   },
 };
