@@ -74,7 +74,7 @@ const UI = (() => {
     updateTopBar(s);
     updateMonthInfo(s);
     updateEventLog(s);
-    renderTargetIdolOptions(s);
+    renderTokutenIdolGrid(s);
     setPhase('week_decision');
     updateSummary(s);
     updateChatPenaltyHint(s);
@@ -103,27 +103,6 @@ const UI = (() => {
     $('#stat-bar-mood').style.background = s.mood < 25
       ? 'linear-gradient(90deg, var(--red), #ff6b6b)'
       : 'linear-gradient(90deg, var(--primary-1), var(--primary-3))';
-
-    // 偶像徽章 - 只显示羁绊>0的
-    const badges = $('#idol-badges');
-    badges.innerHTML = '';
-    const activeIdols = s.idols.filter(i => i.bond > 0 || i.bondLevel > 0);
-    if (activeIdols.length === 0) {
-      // 显示所有偶像简要
-      s.idols.slice(0, 4).forEach(idol => {
-        const badge = document.createElement('span');
-        badge.className = 'idol-badge';
-        badge.textContent = `${idol.emoji} ${idol.name}`;
-        badges.appendChild(badge);
-      });
-    } else {
-      activeIdols.forEach(idol => {
-        const badge = document.createElement('span');
-        badge.className = 'idol-badge';
-        badge.innerHTML = `${idol.emoji} ${idol.name} <span class="bond-level">Lv.${idol.bondLevel}</span>`;
-        badges.appendChild(badge);
-      });
-    }
   }
 
   function updateMonthInfo(s) {
@@ -150,27 +129,32 @@ const UI = (() => {
     log.scrollTop = log.scrollHeight;
   }
 
-  function renderTargetIdolOptions(s) {
-    const container = $('#target-idol-options');
+  function renderTokutenIdolGrid(s) {
+    const container = $('#tokuten-idol-grid');
+    if (!container) return;
     container.innerHTML = '';
     s.idols.forEach(idol => {
-      const btn = document.createElement('button');
-      btn.className = 'target-idol-btn' + (s.choices.targetIdolId === idol.id ? ' selected' : '');
-      btn.textContent = `${idol.emoji} ${idol.name}`;
-      btn.addEventListener('click', () => {
-        s.choices.targetIdolId = idol.id;
-        container.querySelectorAll('.target-idol-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
+      const card = document.createElement('div');
+      const isSelected = s.choices.selectedIdolIds.includes(idol.id);
+      card.className = 'tokuten-idol-card' + (isSelected ? ' selected' : '');
+      card.dataset.idolId = idol.id;
+      card.innerHTML = `
+        <div class="tokuten-idol-emoji">${idol.emoji}</div>
+        <div class="tokuten-idol-name">${idol.name}</div>
+        <div class="tokuten-idol-check">${isSelected ? '✓' : ''}</div>
+      `;
+      card.addEventListener('click', () => {
+        const idx = s.choices.selectedIdolIds.indexOf(idol.id);
+        if (idx >= 0) {
+          s.choices.selectedIdolIds.splice(idx, 1);
+        } else {
+          s.choices.selectedIdolIds.push(idol.id);
+        }
+        renderTokutenIdolGrid(s);
         updateSummary(s);
       });
-      container.appendChild(btn);
+      container.appendChild(card);
     });
-    // 默认选中第一个
-    if (!s.choices.targetIdolId && s.idols.length > 0) {
-      s.choices.targetIdolId = s.idols[0].id;
-      const firstBtn = container.querySelector('.target-idol-btn');
-      if (firstBtn) firstBtn.classList.add('selected');
-    }
   }
 
   // 更新聊天"聊舞台"的惩罚提示
@@ -243,43 +227,17 @@ const UI = (() => {
 
   function updateSummary(s) {
     const cost = Game.calcWeekCost();
-    const c = s.choices;
 
-    if (c.participate === null) {
-      $('#sum-participate').textContent = '-';
-      $('#sum-method').textContent = '-';
-    } else if (!c.participate) {
-      $('#sum-participate').textContent = '⏭️ 休息';
-      $('#sum-method').textContent = '-';
-    } else {
-      $('#sum-participate').textContent = '✅ 参加';
-      const method = PARTICIPATION_METHODS[c.participationMethod];
-      $('#sum-method').textContent = method ? method.name : '-';
-    }
-
-    const targetIdol = s.idols.find(i => i.id === c.targetIdolId);
-    $('#sum-idol').textContent = targetIdol ? targetIdol.name : '-';
-
-    const ticket = c.ticketType ? TICKET_TYPES[c.ticketType] : null;
-    $('#sum-ticket').textContent = ticket ? ticket.name : '-';
-
-    const chat = c.chatMethod ? CHAT_METHODS[c.chatMethod] : null;
-    $('#sum-chat').textContent = chat ? chat.name : '-';
-
-    // 数值
     if (cost.skip) {
       $('#sum-cost-economy').textContent = '0';
       $('#sum-cost-energy').textContent = '+5';
       $('#sum-gain-mood').textContent = '-2';
-      $('#sum-gain-bond').textContent = '0';
     } else {
       $('#sum-cost-economy').textContent = '-' + cost.economy;
       $('#sum-cost-energy').textContent = '-' + cost.energy;
       $('#sum-gain-mood').textContent = (cost.mood >= 0 ? '+' : '') + cost.mood;
-      $('#sum-gain-bond').textContent = '+' + cost.bond;
     }
 
-    // 惩罚提示
     const penaltyRow = $('#sum-penalty');
     if (cost.showPenalty) {
       penaltyRow.style.display = 'flex';
@@ -333,11 +291,12 @@ const UI = (() => {
 
         // 如果选了"只是看现场"，跳过特典
         if (method.skipTokuten) {
-          // 直接确认
+          s.choices.selectedIdolIds = [];
           s.choices.ticketType = null;
           s.choices.chatMethod = null;
         } else {
-          // 进入特典+聊天
+          // 进入特典+聊天，刷新偶像网格
+          renderTokutenIdolGrid(s);
           setPhase('week_tokuten');
         }
       });
@@ -382,7 +341,7 @@ const UI = (() => {
 
       if (currentPhase === 'week_tokuten') {
         setPhase('week_method');
-        // 清除特典选择
+        s.choices.selectedIdolIds = [];
         s.choices.ticketType = null;
         s.choices.chatMethod = null;
         updateSummary(s);
@@ -420,8 +379,8 @@ const UI = (() => {
 
       const method = PARTICIPATION_METHODS[c.participationMethod];
       if (!method.skipTokuten) {
-        if (!c.targetIdolId) {
-          showToast('请选择特典对象');
+        if (c.selectedIdolIds.length === 0) {
+          showToast('请至少选择一位偶像');
           setPhase('week_tokuten');
           return;
         }

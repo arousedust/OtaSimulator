@@ -573,13 +573,56 @@ html, body {
 .tokuten-section {
   display: flex; flex-direction: column; gap: 20px;
 }
-.tokuten-layout {
-  display: flex; gap: 24px;
+/* 多选偶像网格 */
+.tokuten-idol-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.tokuten-idol-card {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: rgba(37,37,80,.4);
+  border: 2px solid rgba(255,107,157,.1);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+.tokuten-idol-card:hover {
+  border-color: var(--primary-1);
+  transform: translateY(-2px);
+  box-shadow: var(--glow-pink);
+}
+.tokuten-idol-card.selected {
+  border-color: var(--cyan);
+  background: rgba(0,229,255,.1);
+  box-shadow: var(--glow-cyan);
+}
+.tokuten-idol-emoji { font-size: 24px; flex-shrink: 0; }
+.tokuten-idol-name {
+  font-size: 14px; font-weight: 600;
+  color: var(--text-1);
+  flex: 1;
+}
+.tokuten-idol-card.selected .tokuten-idol-name { color: var(--cyan); }
+.tokuten-idol-check {
+  font-size: 16px; font-weight: 700;
+  color: var(--green);
+  opacity: 0;
+  transition: var(--transition);
+}
+.tokuten-idol-card.selected .tokuten-idol-check { opacity: 1; }
+
+/* 特典选项行 */
+.tokuten-options-row {
+  display: flex; gap: 20px;
   flex-wrap: wrap;
 }
-.tokuten-col {
+.tokuten-opt-col {
   flex: 1;
-  min-width: 200px;
+  min-width: 220px;
 }
 .tokuten-label {
   display: block;
@@ -588,6 +631,21 @@ html, body {
   margin-bottom: 10px;
   padding-bottom: 4px;
   border-bottom: 1px solid rgba(255,107,157,.15);
+}
+
+/* 三列变体 */
+.choice-cards.three-col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* 旧特典样式保留兼容 */
+.tokuten-layout {
+  display: flex; gap: 24px;
+  flex-wrap: wrap;
+}
+.tokuten-col {
+  flex: 1;
+  min-width: 200px;
 }
 .tokuten-col + .tokuten-col {
   border-left: 1px solid rgba(255,107,157,.08);
@@ -962,4 +1020,6 @@ html, body {
   .stat-bars { flex-direction: column; gap: 8px; }
   .game-topbar { flex-wrap: wrap; }
   .target-idol-options { flex-direction: column; }
+  .tokuten-idol-grid { grid-template-columns: repeat(2, 1fr); }
+  .tokuten-options-row { flex-direction: column; }
 }

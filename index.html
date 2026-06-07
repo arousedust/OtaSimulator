@@ -98,9 +98,7 @@
           <span id="stat-val-mood" class="stat-val">70</span>
         </div>
       </div>
-      <div id="idol-badges" class="idol-badges">
-        <!-- 动态填充 -->
-      </div>
+
     </div>
 
     <!-- 主内容区 -->
@@ -167,66 +165,55 @@
           </div>
         </div>
 
-        <!-- 阶段3：特典对象 + 买券 + 聊天 -->
+        <!-- 阶段3：特典对象（多选） + 买券 + 聊天 -->
         <div id="action-step-tokuten" class="action-step">
-          <h3>特典对象 · 买券方式 · 聊天内容</h3>
-          <div class="tokuten-layout">
-            <!-- 左：选择偶像 -->
-            <div class="tokuten-col">
-              <label class="tokuten-label">选择偶像</label>
-              <div id="target-idol-options" class="target-idol-options">
-                <!-- 动态填充 -->
-              </div>
-            </div>
-            <!-- 右：买券 + 聊天 -->
-            <div class="tokuten-col">
-              <label class="tokuten-label">买券方式</label>
-              <div class="choice-cards two-col" id="ticket-type-cards">
+          <h3>选择特典对象（可多选）</h3>
+          <div id="tokuten-idol-grid" class="tokuten-idol-grid">
+            <!-- 动态填充6位偶像多选卡片 -->
+          </div>
+          <div class="tokuten-options-row">
+            <div class="tokuten-opt-col">
+              <label class="tokuten-label">买券方式（所有选中偶像共享）</label>
+              <div class="choice-cards three-col" id="ticket-type-cards">
                 <div class="choice-card" data-ticket="small">
-                  <div class="choice-icon">🎫</div>
-                  <h4>小券</h4>
-                  <p class="choice-cost">经济-200</p>
+                  <div class="choice-icon">🎫</div><h4>小券</h4>
+                  <p class="choice-cost">经济-200/人</p>
                   <p class="choice-effect">心情+5 / 羁绊+3</p>
                 </div>
                 <div class="choice-card" data-ticket="large">
-                  <div class="choice-icon">🎟️</div>
-                  <h4>大券</h4>
-                  <p class="choice-cost">经济-800</p>
+                  <div class="choice-icon">🎟️</div><h4>大券</h4>
+                  <p class="choice-cost">经济-800/人</p>
                   <p class="choice-effect">心情+10 / 羁绊+8</p>
                 </div>
                 <div class="choice-card" data-ticket="close">
-                  <div class="choice-icon">🌟</div>
-                  <h4>关门</h4>
-                  <p class="choice-cost">经济-2000</p>
+                  <div class="choice-icon">🌟</div><h4>关门</h4>
+                  <p class="choice-cost">经济-2000/人</p>
                   <p class="choice-effect">心情+25 / 羁绊+15</p>
                 </div>
               </div>
-              <label class="tokuten-label">聊天内容</label>
+            </div>
+            <div class="tokuten-opt-col">
+              <label class="tokuten-label">聊天内容（所有选中偶像共享）</label>
               <div class="choice-cards two-col" id="chat-method-cards">
                 <div class="choice-card" data-chat="casual">
-                  <div class="choice-icon">💬</div>
-                  <h4>随便聊聊</h4>
+                  <div class="choice-icon">💬</div><h4>随便聊聊</h4>
                   <p class="choice-effect">心情+3 / 羁绊+2</p>
                 </div>
                 <div class="choice-card" data-chat="values">
-                  <div class="choice-icon">🤔</div>
-                  <h4>聊价值观</h4>
+                  <div class="choice-icon">🤔</div><h4>聊价值观</h4>
                   <p class="choice-effect">心情+5 / 羁绊+4</p>
                 </div>
                 <div class="choice-card" data-chat="hobbies">
-                  <div class="choice-icon">🎮</div>
-                  <h4>聊兴趣爱好</h4>
+                  <div class="choice-icon">🎮</div><h4>聊兴趣爱好</h4>
                   <p class="choice-effect">心情+4 / 羁绊+3</p>
                 </div>
                 <div class="choice-card" data-chat="stage">
-                  <div class="choice-icon">🎤</div>
-                  <h4>聊舞台</h4>
+                  <div class="choice-icon">🎤</div><h4>聊舞台</h4>
                   <p class="choice-effect">心情+8 / 羁绊+5</p>
-                  <p class="choice-hint penalty-hint" style="display:none">⚠ 只参特典时可能负面</p>
+                  <p class="choice-hint penalty-hint" style="display:none">⚠ 只参特典时负面</p>
                 </div>
                 <div class="choice-card" data-chat="demand">
-                  <div class="choice-icon">💪</div>
-                  <h4>要求对应</h4>
+                  <div class="choice-icon">💪</div><h4>要求对应</h4>
                   <p class="choice-effect">心情+6 / 羁绊+7</p>
                 </div>
               </div>
@@ -238,16 +225,9 @@
         <div class="action-summary">
           <h3>本周消耗总览</h3>
           <div id="summary-details" class="summary-details">
-            <div class="summary-row"><span>参与状态</span><span id="sum-participate">-</span></div>
-            <div class="summary-row"><span>参与方式</span><span id="sum-method">-</span></div>
-            <div class="summary-row"><span>特典对象</span><span id="sum-idol">-</span></div>
-            <div class="summary-row"><span>买券方式</span><span id="sum-ticket">-</span></div>
-            <div class="summary-row"><span>聊天内容</span><span id="sum-chat">-</span></div>
-            <div class="summary-divider"></div>
-            <div class="summary-row total"><span>经济消耗</span><span id="sum-cost-economy">0</span></div>
-            <div class="summary-row total"><span>精力消耗</span><span id="sum-cost-energy">0</span></div>
-            <div class="summary-row total"><span>预计心情</span><span id="sum-gain-mood">0</span></div>
-            <div class="summary-row total"><span>预计羁绊</span><span id="sum-gain-bond">0</span></div>
+            <div class="summary-row total"><span>💰 经济</span><span id="sum-cost-economy">0</span></div>
+            <div class="summary-row total"><span>⚡ 精力</span><span id="sum-cost-energy">0</span></div>
+            <div class="summary-row total"><span>💖 心情</span><span id="sum-gain-mood">0</span></div>
             <div id="sum-penalty" class="summary-row penalty" style="display:none"><span>⚠ 注意</span><span id="sum-penalty-text"></span></div>
           </div>
           <div id="action-nav" class="action-nav">

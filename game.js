@@ -34,9 +34,9 @@ const Game = (() => {
       choices: {
         participate: null,
         participationMethod: null,
-        targetIdolId: null,
-        ticketType: null,
-        chatMethod: null,
+        selectedIdolIds: [],          // 多选偶像ID列表
+        ticketType: null,             // 共享买券方式
+        chatMethod: null,             // 共享聊天方式
       },
       modifiers: {
         economyRecoveryMod: 1,
@@ -83,7 +83,7 @@ const Game = (() => {
     state.choices = {
       participate: null,
       participationMethod: null,
-      targetIdolId: null,
+      selectedIdolIds: [],
       ticketType: null,
       chatMethod: null,
     };
@@ -132,7 +132,6 @@ const Game = (() => {
     const c = state.choices;
 
     if (!c.participate) {
-      // 休息：小幅恢复精力，小幅心情下降
       state.energy = Math.min(state.energy + 5, state.energyCap);
       state.mood -= 2;
       clampPlayerStats();
@@ -147,67 +146,68 @@ const Game = (() => {
     state.economy -= method.cost.economy;
     state.energy -= method.cost.energy;
     state.mood += method.effect.mood;
-    let totalBond = method.effect.bond;
+    const methodBond = method.effect.bond;
 
-    // 非"只是看现场"则进入特典+聊天
-    if (!method.skipTokuten && c.ticketType && c.chatMethod) {
+    // 非"只是看现场"则进入特典+聊天（多偶像）
+    if (!method.skipTokuten && c.selectedIdolIds.length > 0 && c.ticketType && c.chatMethod) {
       const ticket = TICKET_TYPES[c.ticketType];
       const chat = CHAT_METHODS[c.chatMethod];
+      const idolCount = c.selectedIdolIds.length;
 
       if (ticket && chat) {
-        // 买券经济消耗
-        state.economy -= ticket.cost.economy;
-        state.mood += ticket.effect.mood + chat.effect.mood;
-        totalBond += ticket.effect.bond + chat.effect.bond;
+        // 买券经济消耗 × 偶像数
+        state.economy -= ticket.cost.economy * idolCount;
+        state.mood += (ticket.effect.mood + chat.effect.mood) * idolCount;
+        const perIdolBond = methodBond + ticket.effect.bond + chat.effect.bond;
 
-        const targetIdol = state.idols.find(i => i.id === c.targetIdolId);
-        if (targetIdol) {
-          targetIdol.bond += totalBond;
-          targetIdol.bondLevel = getBondLevel(targetIdol.bond);
+        let hasPenalty = false;
 
-          // 参与方式对偶像影响
+        c.selectedIdolIds.forEach(idolId => {
+          const idol = state.idols.find(i => i.id === idolId);
+          if (!idol) return;
+
+          idol.bond += perIdolBond;
+          idol.bondLevel = getBondLevel(idol.bond);
+
           if (method.idolEffect) {
-            targetIdol.mental += method.idolEffect.mental || 0;
-            targetIdol.affection += method.idolEffect.affection || 0;
-            targetIdol.attention += method.idolEffect.attention || 0;
+            idol.mental += method.idolEffect.mental || 0;
+            idol.affection += method.idolEffect.affection || 0;
+            idol.attention += method.idolEffect.attention || 0;
           }
-          // 买券对偶像影响
           if (ticket.idolEffect) {
-            targetIdol.mental += ticket.idolEffect.mental || 0;
-            targetIdol.affection += ticket.idolEffect.affection || 0;
-            targetIdol.attention += ticket.idolEffect.attention || 0;
+            idol.mental += ticket.idolEffect.mental || 0;
+            idol.affection += ticket.idolEffect.affection || 0;
+            idol.attention += ticket.idolEffect.attention || 0;
           }
-          // 聊天对偶像影响
           if (chat.idolEffect) {
-            targetIdol.mental += chat.idolEffect.mental || 0;
-            targetIdol.affection += chat.idolEffect.affection || 0;
-            targetIdol.attention += chat.idolEffect.attention || 0;
+            idol.mental += chat.idolEffect.mental || 0;
+            idol.affection += chat.idolEffect.affection || 0;
+            idol.attention += chat.idolEffect.attention || 0;
           }
 
-          // 聊舞台惩罚
+          // 聊舞台惩罚（每个偶像都应用）
           if (chat.penaltyCondition && chat.penaltyCondition(state)) {
             state.mood += chat.penalty.mood || 0;
-            targetIdol.bond = Math.max(0, targetIdol.bond + (chat.penalty.bond || 0));
+            idol.bond = Math.max(0, idol.bond + (chat.penalty.bond || 0));
             if (chat.penaltyIdolEffect) {
-              targetIdol.mental += chat.penaltyIdolEffect.mental || 0;
-              targetIdol.affection += chat.penaltyIdolEffect.affection || 0;
-              targetIdol.attention += chat.penaltyIdolEffect.attention || 0;
+              idol.mental += chat.penaltyIdolEffect.mental || 0;
+              idol.affection += chat.penaltyIdolEffect.affection || 0;
+              idol.attention += chat.penaltyIdolEffect.attention || 0;
             }
-            // 记录惩罚标记
-            state._chatPenalty = chat.penaltyDesc || '';
+            hasPenalty = true;
           }
+        });
+
+        if (hasPenalty) {
+          state._chatPenalty = chat.penaltyDesc || '';
         }
       }
-    } else if (!method.skipTokuten) {
-      // 有特典但未选完（验证应在UI层阻止）
-    }
-
-    // 非特典时，参与方式的基础羁绊加到第一个互动最多的偶像
-    if (method.skipTokuten || !c.ticketType) {
-      // 默认加给最近互动的偶像或第一个
-      const target = state.idols.find(i => i.id === c.targetIdolId) || state.idols[0];
+    } else if (method.skipTokuten) {
+      // 只是看现场：基础羁绊加到选中的或第一个偶像
+      const idolId = c.selectedIdolIds[0] || state.idols[0].id;
+      const target = state.idols.find(i => i.id === idolId);
       if (target) {
-        target.bond += totalBond;
+        target.bond += methodBond;
         target.bondLevel = getBondLevel(target.bond);
         if (method.idolEffect) {
           target.mental += method.idolEffect.mental || 0;
@@ -288,7 +288,8 @@ const Game = (() => {
       }
 
       if (evt.idolEffect) {
-        const targetIdol = state.idols.find(i => i.id === state.choices.targetIdolId);
+        const firstIdolId = state.choices.selectedIdolIds[0] || state.idols[0]?.id;
+        const targetIdol = state.idols.find(i => i.id === firstIdolId);
         if (evt.idolEffect._all) {
           state.idols.forEach(idol => {
             if (evt.idolEffect._all.mental) idol.mental += evt.idolEffect._all.mental;
@@ -381,31 +382,29 @@ const Game = (() => {
   function calcWeekCost() {
     const c = state.choices;
     if (!c.participate) {
-      return { economy: 0, energy: -5, mood: -2, bond: 0, skip: true };
+      return { economy: 0, energy: -5, mood: -2, skip: true };
     }
 
     const method = PARTICIPATION_METHODS[c.participationMethod];
-    if (!method) return { economy: 0, energy: 0, mood: 0, bond: 0 };
+    if (!method) return { economy: 0, energy: 0, mood: 0, skip: true };
 
     let economy = method.cost.economy;
     let energy = method.cost.energy;
     let mood = method.effect.mood;
-    let bond = method.effect.bond;
 
     let showPenalty = false;
     let penaltyDesc = '';
+    const idolCount = c.selectedIdolIds.length || 1;
 
-    if (!method.skipTokuten && c.ticketType && c.chatMethod) {
+    if (!method.skipTokuten && c.selectedIdolIds.length > 0 && c.ticketType && c.chatMethod) {
       const ticket = TICKET_TYPES[c.ticketType];
       const chat = CHAT_METHODS[c.chatMethod];
       if (ticket && chat) {
-        economy += ticket.cost.economy;
-        mood += ticket.effect.mood + chat.effect.mood;
-        bond += ticket.effect.bond + chat.effect.bond;
+        economy += ticket.cost.economy * idolCount;
+        mood += (ticket.effect.mood + chat.effect.mood) * idolCount;
 
         if (chat.penaltyCondition && chat.penaltyCondition(state)) {
-          mood += chat.penalty.mood || 0;
-          bond += chat.penalty.bond || 0;
+          mood += (chat.penalty.mood || 0) * idolCount;
           showPenalty = true;
           penaltyDesc = chat.penaltyDesc || '';
         }
@@ -416,7 +415,6 @@ const Game = (() => {
       economy,
       energy,
       mood,
-      bond,
       skip: false,
       hasTokuten: !method.skipTokuten,
       showPenalty,
