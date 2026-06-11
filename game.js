@@ -105,6 +105,9 @@ const Game = (() => {
 
     // 参与方式基础消耗（立即）
     state.economy -= method.cost.economy;
+    if (method.perTargetCost && c.cheerTargetIds) {
+      state.economy -= method.perTargetCost.economy * c.cheerTargetIds.length;
+    }
     state.mood += method.effect.mood;
 
     // ★ tag 行动惩罚：标签带有 actionPenalty 且匹配当前参与方式时追加消耗
@@ -412,6 +415,9 @@ const Game = (() => {
     const tagMods = collectPlayerModifiers(state);
     const econMult = tagMods.tokutenEconomyMult || 1;
     let economy = method.cost.economy;
+    if (method.perTargetCost && c.cheerTargetIds) {
+      economy += method.perTargetCost.economy * c.cheerTargetIds.length;
+    }
     let mood = method.effect.mood;
     if (!method.skipTokuten) {
       c.tokutenSelections.forEach(sel => {

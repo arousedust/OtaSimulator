@@ -50,8 +50,8 @@ const PARTICIPATION_METHODS = {
   personal_cheer: {
     name: '个人应援', emoji: '💝',
     cost: { economy: 150 },
+    perTargetCost: { economy: 80 },  // 每多选一位偶像额外花费
     effect: { mood: 8 },
-    skipTokuten: true,
     // 至少有一个偶像切数 >= 3，且全局 cheer >= 3
     condition: (s) => (s.actionLog.cheer || 0) >= 3 && s.idols.some(i => (s.cutCounts[i.id] || 0) >= 3),
     idolEffect: { mental: 5, affection: 5, awareness: 2},
