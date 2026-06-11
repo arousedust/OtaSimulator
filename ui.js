@@ -381,7 +381,7 @@ const UI = (() => {
       const s = Game.getState();
 
       $('#conv-idol-info').textContent = idolInfo;
-      $('#conv-text').textContent = resolveText(interaction.data.text || '', s);
+      $('#conv-text').textContent = resolveText(interaction.data.text || '', s, s.idols.find(i => i.id === inter.idolId));
       $('#conv-effects').innerHTML = '';
       $('#btn-conv-continue').style.display = 'none';
 

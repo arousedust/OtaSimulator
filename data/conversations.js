@@ -5,10 +5,11 @@
    ============================ */
 
 // ★ 替换会话文本中的占位符
-function resolveText(text, state) {
+function resolveText(text, state, idol) {
   if (!text || !state) return text || '';
-  const name = state.playerName || '你';
-  return text.replace(/\{playerName\}/g, name);
+  let result = text.replace(/\{playerName\}/g, state.playerName || '你');
+  if (idol) result = result.replace(/\{idolName\}/g, idol.name || '');
+  return result;
 }
 
 // 全局玩家聊天选项池（供普通/特殊会话使用，按标签过滤）
@@ -131,17 +132,17 @@ const CONVERSATION_POOL = [
   // ===== 普通会话（按偶像状态 + 切数筛选）=====
   // 初见（切数=0）
   { id:'conv_first_1', type:'normal', conditions:{playerCutMax:0},
-    text:'「初次见面！我是○○，请多关照~」偶像有些紧张但很认真地做了自我介绍。' },
+    text:'「初次见面！我是{idolName}，请多关照~」偶像有些紧张但很认真地做了自我介绍。' },
   { id:'conv_first_2', type:'normal', conditions:{playerCutMax:0},
     text:'「你是第一次来特典会吗？不用紧张，随便聊聊就好~」偶像友善地笑了笑。' },
   // 熟悉后（切数>=10）
   { id:'conv_familiar_1', type:'normal', conditions:{playerCutMin:10},
-    text:'「啊，又见面了！」她一看到你就露出了熟悉的笑脸，「今天过得怎么样？」' },
+    text:'「啊，又见面了{playerName}！」她一看到你就露出了熟悉的笑脸，「今天过得怎么样？」' },
   { id:'conv_familiar_2', type:'normal', conditions:{playerCutMin:30},
     text:'「{playerName}，你几乎每次都来呢~」她似乎记住了你的样子，「说真的，很感谢你一直以来的支持。」' },
   // 通用
   { id:'conv_1', type:'normal', conditions:{},
-    text:'偶像微笑着招手：「你好呀~今天也来了呢！」' },
+    text:'偶像微笑着招手：「{playerName}你好呀~今天也来了呢！」' },
   { id:'conv_2', type:'normal', conditions:{},
     text:'偶像聊起了天气：「最近忽冷忽热的，要注意身体哦~」' },
   { id:'conv_3', type:'normal', conditions:{},
@@ -153,7 +154,7 @@ const CONVERSATION_POOL = [
   { id:'conv_6', type:'normal', conditions:{idolMentalMax:40},
     text:'偶像看起来有些疲惫，但还是努力挤出笑容：「抱歉...今天状态不太好。」' },
   { id:'conv_7', type:'normal', conditions:{idolAffectionMin:60},
-    text:'一见面她就热情地打招呼：「好久不见！最近怎么样？」' },
+    text:'一见面她就热情地打招呼：「好久不见{playerName}！最近怎么样？」' },
   { id:'conv_8', type:'normal', conditions:{idolAffectionMax:20},
     text:'偶像礼貌性地点了点头：「你好。」虽然态度礼貌，但感觉还有距离。' },
   { id:'conv_9', type:'normal', conditions:{idolAwarenessMin:60},
@@ -165,6 +166,12 @@ function selectConversation(state, idol, cutCount) {
   const playerTags = (state.playerTags || []).map(t => t.id);
   const idolTags = (idol.tags || []).map(t => t.id);
   const cc = cutCount || 0;
+
+  // 0. 首次见面优先，跳过标签触发
+  if (cc === 0) {
+    const firsts = CONVERSATION_POOL.filter(c => c.type === 'normal' && (c.conditions || {}).playerCutMax === 0);
+    if (firsts.length > 0) return { type: 'normal', data: firsts[Math.floor(Math.random() * firsts.length)] };
+  }
 
   // 1. 标签触发特殊事件
   for (const conv of CONVERSATION_POOL) {
