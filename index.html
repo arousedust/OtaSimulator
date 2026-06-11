@@ -27,6 +27,10 @@
   <div id="screen-char-select" class="screen">
     <h2 class="screen-title">选择你的身份</h2>
     <p class="screen-desc">不同的身份将影响你的初始数值与每月消耗</p>
+    <div class="name-input-section">
+      <label class="name-input-label" for="input-player-name">你的昵称</label>
+      <input type="text" id="input-player-name" class="name-input" placeholder="输入你的ID..." maxlength="12" autocomplete="off">
+    </div>
     <div class="char-cards">
       <div class="char-card" data-char="worker">
         <div class="char-card-glow"></div>
@@ -34,11 +38,10 @@
         <h3 class="char-name">社畜</h3>
         <div class="char-radar">
           <div class="radar-bar"><span class="radar-label">经济</span><div class="radar-fill" style="width:80%"></div></div>
-          <div class="radar-bar"><span class="radar-label">精力</span><div class="radar-fill" style="width:40%"></div></div>
           <div class="radar-bar"><span class="radar-label">心情</span><div class="radar-fill" style="width:50%"></div></div>
         </div>
         <ul class="char-traits">
-          <li>💰 经济充裕</li><li>⚡ 精力有限</li><li>😔 心情消耗大</li>
+          <li>💰 经济充裕</li><li>😔 心情消耗大</li>
         </ul>
       </div>
       <div class="char-card" data-char="student">
@@ -47,11 +50,10 @@
         <h3 class="char-name">学生</h3>
         <div class="char-radar">
           <div class="radar-bar"><span class="radar-label">经济</span><div class="radar-fill" style="width:35%"></div></div>
-          <div class="radar-bar"><span class="radar-label">精力</span><div class="radar-fill" style="width:80%"></div></div>
           <div class="radar-bar"><span class="radar-label">心情</span><div class="radar-fill" style="width:70%"></div></div>
         </div>
         <ul class="char-traits">
-          <li>💰 经济拮据</li><li>⚡ 精力充沛</li><li>😊 心情消耗少</li>
+          <li>💰 经济拮据</li><li>😊 心情消耗少</li>
         </ul>
       </div>
     </div>
@@ -61,21 +63,19 @@
   <!-- ==================== 主游戏面板 ==================== -->
   <div id="screen-game" class="screen">
     <div class="game-topbar">
-      <div class="turn-indicator">
-        <span class="turn-label">接触偶活的第</span>
-        <span id="turn-num" class="turn-num">1</span><span class="turn-label">月，第</span>
-        <span id="week-num" class="turn-num week-num">1</span><span class="turn-label">周</span>
+      <div class="topbar-left">
+        <span id="player-name-display" class="player-name-display"></span>
+          <div class="turn-indicator">
+          <span class="turn-label">接触偶活的第</span>
+          <span id="turn-num" class="turn-num">1</span><span class="turn-label">月，第</span>
+          <span id="week-num" class="turn-num week-num">1</span><span class="turn-label">周</span>
+        </div>
       </div>
       <div class="stat-bars">
         <div class="stat-item">
           <span class="stat-icon">💰</span>
           <div class="stat-bar-wrap"><div id="stat-bar-economy" class="stat-bar" style="width:70%"></div></div>
           <span id="stat-val-economy" class="stat-val">5000</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">⚡</span>
-          <div class="stat-bar-wrap"><div id="stat-bar-energy" class="stat-bar stat-bar-energy" style="width:100%"></div></div>
-          <span id="stat-val-energy" class="stat-val">60/60</span>
         </div>
         <div class="stat-item">
           <span class="stat-icon">💖</span>
@@ -94,7 +94,7 @@
           <div class="phase-arrow">→</div>
           <div class="phase-dot" data-phase="week_method">方式</div>
           <div class="phase-arrow" id="phase-arrow-tokuten">→</div>
-          <div class="phase-dot" id="phase-dot-tokuten" data-phase="week_tokuten">特典&amp;聊天</div>
+          <div class="phase-dot" id="phase-dot-tokuten" data-phase="week_tokuten">特典</div>
         </div>
 
         <!-- 阶段1：本周参加？ -->
@@ -103,11 +103,11 @@
           <div class="choice-cards two-col">
             <div class="choice-card" data-participate="yes">
               <div class="choice-icon">✅</div><h4>参加</h4>
-              <p class="choice-cost">消耗经济&amp;精力</p><p class="choice-effect">提升心情&amp;羁绊</p>
+              <p class="choice-cost">消耗经济</p><p class="choice-effect">提升心情</p>
             </div>
             <div class="choice-card" data-participate="no">
               <div class="choice-icon">⏭️</div><h4>休息</h4>
-              <p class="choice-cost">精力+5</p><p class="choice-effect">心情-2</p>
+              <p class="choice-cost">不消耗经济</p><p class="choice-effect">心情-2</p>
             </div>
           </div>
         </div>
@@ -115,29 +115,13 @@
         <!-- 阶段2：参与方式 -->
         <div id="action-step-method" class="action-step">
           <h3>选择参与方式</h3>
-          <div class="choice-cards">
-            <div class="choice-card" data-method="cheer">
-              <div class="choice-icon">📣</div><h4>现场应援</h4>
-              <p class="choice-cost">经济-500 / 精力-15</p><p class="choice-effect">心情+20 / 羁绊+5</p>
-            </div>
-            <div class="choice-card" data-method="photo">
-              <div class="choice-icon">📸</div><h4>拍照返图</h4>
-              <p class="choice-cost">经济-300 / 精力-10</p><p class="choice-effect">心情+12 / 羁绊+3</p>
-            </div>
-            <div class="choice-card" data-method="watch">
-              <div class="choice-icon">👀</div><h4>只是看现场</h4>
-              <p class="choice-cost">经济-200 / 精力-5</p><p class="choice-effect">心情+8 / 羁绊+1</p>
-              <p class="choice-hint">不进入特典环节</p>
-            </div>
-            <div class="choice-card" data-method="tokuten">
-              <div class="choice-icon">🎫</div><h4>只参与特典</h4>
-              <p class="choice-cost">经济-100 / 精力-3</p><p class="choice-effect">心情+3 / 羁绊+2</p>
-            </div>
+          <div class="choice-cards" id="method-cards">
+            <!-- 动态渲染 -->
           </div>
 
           <!-- 现场应援 → 切偶像 -->
           <div id="cheer-targets-section" class="cheer-targets-section" style="display:none">
-            <h3 class="cheer-targets-title">选择切的小偶像（可多选，每位精力-5 / 好感+5）</h3>
+            <h3 class="cheer-targets-title">选择切的小偶像（可多选，每位心情-1 / 好感+5）</h3>
             <div id="cheer-targets-grid" class="tokuten-idol-grid"></div>
           </div>
         </div>
@@ -150,46 +134,19 @@
           <!-- 当前配置面板 -->
           <div id="tokuten-config-panel" class="tokuten-config-panel" style="display:none">
             <div class="tokuten-config-header">
-              <span id="tokuten-config-idol-name"></span> 的买券方式 &amp; 聊天内容
+              <span id="tokuten-config-idol-name"></span> 的购券张数
             </div>
             <div class="tokuten-options-row">
-              <div class="tokuten-opt-col">
-                <label class="tokuten-label">买券方式</label>
-                <div class="choice-cards three-col" id="ticket-type-cards">
-                  <div class="choice-card" data-ticket="small">
-                    <div class="choice-icon">🎫</div><h4>小券</h4>
-                    <p class="choice-cost">经济-200</p><p class="choice-effect">心情+5 / 羁绊+3</p>
+              <div class="tokuten-opt-col" style="max-width:300px;margin:0 auto;">
+                <label class="tokuten-label">购券张数（100/张）</label>
+                <div class="ticket-count-picker">
+                  <button id="btn-ticket-minus" class="ticket-count-btn">−</button>
+                  <div class="ticket-count-display-wrap">
+                    <span id="ticket-count-display">1</span><span class="ticket-count-unit">张</span>
                   </div>
-                  <div class="choice-card" data-ticket="large">
-                    <div class="choice-icon">🎟️</div><h4>大券</h4>
-                    <p class="choice-cost">经济-800</p><p class="choice-effect">心情+10 / 羁绊+8</p>
-                  </div>
-                  <div class="choice-card" data-ticket="close">
-                    <div class="choice-icon">🌟</div><h4>关门</h4>
-                    <p class="choice-cost">经济-2000</p><p class="choice-effect">心情+25 / 羁绊+15</p>
-                  </div>
+                  <button id="btn-ticket-plus" class="ticket-count-btn">+</button>
                 </div>
-              </div>
-              <div class="tokuten-opt-col">
-                <label class="tokuten-label">聊天内容</label>
-                <div class="choice-cards two-col" id="chat-method-cards">
-                  <div class="choice-card" data-chat="casual">
-                    <div class="choice-icon">💬</div><h4>随便聊聊</h4><p class="choice-effect">心情+3 / 羁绊+2</p>
-                  </div>
-                  <div class="choice-card" data-chat="values">
-                    <div class="choice-icon">🤔</div><h4>聊价值观</h4><p class="choice-effect">心情+5 / 羁绊+4</p>
-                  </div>
-                  <div class="choice-card" data-chat="hobbies">
-                    <div class="choice-icon">🎮</div><h4>聊兴趣爱好</h4><p class="choice-effect">心情+4 / 羁绊+3</p>
-                  </div>
-                  <div class="choice-card" data-chat="stage">
-                    <div class="choice-icon">🎤</div><h4>聊舞台</h4>
-                    <p class="choice-effect">心情+8 / 羁绊+5</p>
-                  </div>
-                  <div class="choice-card" data-chat="demand">
-                    <div class="choice-icon">💪</div><h4>要求对应</h4><p class="choice-effect">心情+6 / 羁绊+7</p>
-                  </div>
-                </div>
+                <p id="ticket-cost-preview" class="ticket-cost-preview">经济-200</p>
               </div>
             </div>
             <div class="tokuten-config-actions">
@@ -206,9 +163,9 @@
           <h3>本周消耗总览</h3>
           <div id="summary-details" class="summary-details">
             <div class="summary-row total"><span>💰 经济</span><span id="sum-cost-economy">0</span></div>
-            <div class="summary-row total"><span>⚡ 精力</span><span id="sum-cost-energy">0</span></div>
             <div class="summary-row total"><span>💖 心情</span><span id="sum-gain-mood">0</span></div>
             <div id="sum-penalty" class="summary-row penalty" style="display:none"><span>⚠</span><span id="sum-penalty-text"></span></div>
+            <div id="sum-modifier-hint" class="summary-row modifier-hint" style="display:none"></div>
           </div>
           <div id="action-nav" class="action-nav">
             <button id="btn-prev-phase" class="neon-btn secondary" style="display:none">上一步</button>
@@ -219,18 +176,23 @@
 
       <!-- 右侧信息面板 -->
       <div class="info-panel">
+        <!-- 当前标签 -->
+        <div id="player-tags-section" class="player-tags-section">
+          <h3>当前标签</h3>
+          <div id="player-tags" class="player-tags" style="display:none"></div>
+          <p id="player-tags-empty" class="log-empty" style="display:block">暂无标签</p>
+        </div>
         <!-- 相识偶像 -->
         <div id="known-idols-section" class="known-idols-section">
-          <h3>相识的小偶像</h3>
+          <h3>已切偶像张数</h3>
           <div id="known-idols-list" class="known-idols-list">
-            <p class="log-empty">尚未与任何偶像相识</p>
+            <p class="log-empty">尚未购买特典券</p>
           </div>
         </div>
         <div class="month-info">
           <h3>本月信息</h3>
           <div id="month-recovery" class="info-block">
             <p>💰 经济恢复：<span id="rec-economy">+3000</span></p>
-            <p>⚡ 精力恢复：<span id="rec-energy">+40</span></p>
             <p>😔 心情月耗：<span id="drain-mood">-15</span></p>
           </div>
         </div>
@@ -267,6 +229,18 @@
     </div>
   </div>
 
+  <!-- ==================== 偶像会话弹窗 ==================== -->
+  <div id="overlay-conversation" class="overlay">
+    <div class="overlay-backdrop"></div>
+    <div class="event-card conversation-card">
+      <div id="conv-idol-info" class="conv-idol-info"></div>
+      <p id="conv-text" class="event-desc" style="font-style:italic"></p>
+      <div id="conv-choices" class="choice-options"></div>
+      <div id="conv-effects" class="event-effects"></div>
+      <button id="btn-conv-continue" class="neon-btn small" style="display:none">继续</button>
+    </div>
+  </div>
+
   <div id="overlay-chat-penalty" class="overlay">
     <div class="overlay-backdrop"></div>
     <div class="event-card penalty-card">
@@ -283,9 +257,7 @@
     <h2 class="screen-title">本月结算</h2>
     <div class="settle-stats">
       <div class="settle-stat"><span class="settle-stat-label">💰 经济</span><span id="settle-economy" class="settle-stat-val">5000</span><span id="settle-economy-delta" class="settle-delta"></span></div>
-      <div class="settle-stat"><span class="settle-stat-label">⚡ 精力</span><span id="settle-energy" class="settle-stat-val">60</span><span id="settle-energy-delta" class="settle-delta"></span></div>
       <div class="settle-stat"><span class="settle-stat-label">💖 心情</span><span id="settle-mood" class="settle-stat-val">70</span><span id="settle-mood-delta" class="settle-delta"></span></div>
-      <div class="settle-stat"><span class="settle-stat-label">💕 羁绊</span><span id="settle-bond" class="settle-stat-val">0</span><span id="settle-bond-delta" class="settle-delta"></span></div>
     </div>
     <div class="settle-events"><h3>本月事件</h3><ul id="settle-event-list" class="settle-event-list"></ul></div>
     <button id="btn-next-month" class="neon-btn">进入下月</button>
@@ -307,17 +279,16 @@
 
   <script src="data/config.js"></script>
   <script src="data/idols.js"></script>
-  <script src="events/common.js"></script>
-  <script src="events/worker.js"></script>
-  <script src="events/student.js"></script>
-  <script src="events/idol.js"></script>
-  <script src="events/interact.js"></script>
+  <script src="tags/player.js"></script>
+  <script src="tags/idol.js"></script>
+  <script src="data/conversations.js"></script>
+  <script src="events/monthly.js"></script>
+  <script src="events/weekStart.js"></script>
+  <script src="events/preTokuten.js"></script>
+  <script src="events/postTicket.js"></script>
   <script src="events/tokuten.js"></script>
   <script src="events/index.js"></script>
-  <script src="endings/early.js"></script>
   <script src="endings/normal.js"></script>
-  <script src="status/player.js"></script>
-  <script src="status/idol.js"></script>
   <script src="game.js"></script>
   <script src="ui.js"></script>
 </body>

@@ -77,6 +77,45 @@ html, body {
   font-size: 14px;
 }
 
+/* ---------- 昵称输入 ---------- */
+.name-input-section {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.name-input-label {
+  display: block;
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.name-input {
+  width: 260px; max-width: 90%;
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  color: var(--text-1);
+  font-size: 18px;
+  font-family: var(--font);
+  padding: 10px 18px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.name-input:focus {
+  border-color: var(--primary-1);
+  box-shadow: 0 0 16px rgba(255,107,157,.3);
+}
+.name-input::placeholder {
+  color: var(--text-4);
+  font-size: 14px;
+}
+.name-input-hint {
+  font-size: 11px;
+  color: var(--text-4);
+  margin-top: 6px;
+}
+
 /* ---------- 霓虹按钮 ---------- */
 .neon-btn {
   position: relative;
@@ -325,6 +364,18 @@ html, body {
   flex-shrink: 0;
   gap: 24px;
 }
+.topbar-left {
+  display: flex; align-items: center; gap: 12px;
+}
+.player-name-display {
+  font-size: 15px; font-weight: 600;
+  color: var(--primary-1);
+  background: rgba(255,107,157,.12);
+  border: 1px solid rgba(255,107,157,.25);
+  border-radius: 8px;
+  padding: 3px 12px;
+  white-space: nowrap;
+}
 .turn-indicator {
   display: flex; align-items: baseline; gap: 4px;
   white-space: nowrap;
@@ -360,9 +411,6 @@ html, body {
   background: linear-gradient(90deg, var(--primary-1), var(--gold));
   transition: width .6s ease;
 }
-.stat-bar-energy {
-  background: linear-gradient(90deg, var(--cyan), var(--green));
-}
 .stat-bar-mood {
   background: linear-gradient(90deg, var(--primary-1), var(--primary-3));
 }
@@ -385,10 +433,6 @@ html, body {
   font-size: 12px;
   color: var(--primary-2);
   cursor: default;
-}
-.idol-badge .bond-level {
-  color: var(--gold);
-  font-weight: 700;
 }
 
 /* 主内容区 */
@@ -604,6 +648,15 @@ html, body {
   border-color: var(--cyan);
   box-shadow: var(--glow-cyan);
 }
+.tokuten-idol-card.blocked {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.tokuten-idol-card .blocked-tag {
+  color: #ff4757;
+  font-size: 12px;
+}
 .tokuten-idol-emoji { font-size: 24px; flex-shrink: 0; }
 .tokuten-idol-name {
   font-size: 14px; font-weight: 600;
@@ -731,6 +784,90 @@ html, body {
   grid-template-columns: repeat(3, 1fr);
 }
 
+/* ☆ 购券张数选择器 */
+.ticket-count-picker {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 8px;
+  justify-content: center;
+}
+.ticket-count-btn {
+  width: 44px; height: 44px;
+  font-size: 24px; font-weight: 700;
+  color: var(--text-1);
+  background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+  border: 2px solid var(--primary-1);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.ticket-count-btn:hover {
+  transform: scale(1.1);
+  box-shadow: var(--glow-pink);
+}
+.ticket-count-btn:active { transform: scale(.95); }
+.ticket-count-display-wrap {
+  display: flex; align-items: baseline; gap: 4px;
+  padding: 8px 16px;
+  background: rgba(37,37,80,.6);
+  border: 2px solid rgba(255,107,157,.2);
+  border-radius: var(--radius-sm);
+  min-width: 80px; justify-content: center;
+}
+#ticket-count-display {
+  font-size: 32px; font-weight: 700;
+  color: var(--gold);
+  text-shadow: var(--glow-gold);
+}
+.ticket-count-unit {
+  font-size: 14px; color: var(--text-3);
+}
+.ticket-cost-preview {
+  text-align: center;
+  font-size: 13px; font-weight: 600;
+  color: var(--red);
+  margin-top: 6px;
+}
+/* ☆ 玩家标签区域 */
+.player-tags-section {
+  margin-bottom: 12px;
+}
+.player-tags-section h3 {
+  font-size: 14px; color: var(--text-1);
+  margin-bottom: 8px;
+}
+.player-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.player-tag-badge {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(255,215,0,.08), rgba(255,107,157,.06));
+  border: 1px solid rgba(255,215,0,.25);
+  border-radius: 20px;
+  font-size: 12px; color: var(--gold);
+  cursor: default;
+}
+.player-tag-badge .tag-turn {
+  font-size: 10px; color: var(--text-3);
+  background: rgba(255,255,255,.06);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+/* ☆ 标签获取效果 */
+.effect-tag.tag-award {
+  background: rgba(255,215,0,.15);
+  color: var(--gold);
+  border: 1px solid rgba(255,215,0,.3);
+}
+
+/* ☆ 结局屏 3 列 */
+.ending-idol-details {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
 /* 特殊行动 */
 .special-actions-list {
   margin-bottom: 12px;
@@ -771,6 +908,15 @@ html, body {
 }
 .summary-row.penalty span:last-child {
   color: var(--gold) !important;
+}
+.summary-row.modifier-hint {
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 600;
+  grid-column: 1 / -1;
+  padding-top: 4px;
+  border-top: 1px solid rgba(0,229,255,.1);
+  margin-top: 2px;
 }
 .summary-divider {
   grid-column: 1 / -1;
@@ -841,6 +987,20 @@ html, body {
 }
 .choice-option-btn:hover {
   background: rgba(255,107,157,.2);
+}
+
+/* ☆ 偶像会话卡片 */
+.conversation-card {
+  max-width: 480px;
+}
+.conv-idol-info {
+  font-size: 14px; color: var(--gold); text-align: center;
+  margin-bottom: 8px; padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,215,0,.15);
+}
+#conv-text {
+  font-size: 15px; line-height: 1.7; color: var(--text-2);
+  min-height: 40px;
 }
 
 /* ===========================
