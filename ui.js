@@ -44,7 +44,7 @@ const UI = (() => {
   function renderGameScreen() {
     const s = Game.getState();
     updateTopBar(s); updateMonthInfo(s); updateEventLog(s); updateKnownIdols(s); updatePlayerTags(s);
-    renderMethodCards(s); renderTokutenIdolGrid(s); renderCheerTargets(s);
+    renderParticipateCards(s); renderMethodCards(s); renderTokutenIdolGrid(s); renderCheerTargets(s);
     resetTokutenEdit(); hideTokutenConfigPanel(); renderTokutenSelectionsBar(s);
     $$('.choice-card').forEach(c => c.classList.remove('selected'));
     setPhase('week_decision'); updateSummary(s);
@@ -165,6 +165,35 @@ const UI = (() => {
     });
   }
 
+  // ★ 动态渲染步骤1「本周行动」卡片
+  function renderParticipateCards(s) {
+    const container = $('#participate-cards'); if (!container) return;
+    container.innerHTML = '';
+    for (const [key, opt] of Object.entries(PARTICIPATE_OPTIONS)) {
+      if (opt.condition && !opt.condition(s)) continue;
+      if (opt.requiredTag && !hasPlayerTag(s, opt.requiredTag)) continue;
+      const card = document.createElement('div');
+      card.className = 'choice-card' + (s.choices.participateAction === key ? ' selected' : '');
+      card.dataset.action = key;
+      card.innerHTML = `<div class="choice-icon">${opt.icon}</div><h4>${opt.name}</h4><p class="choice-cost">${opt.costHint}</p><p class="choice-effect">${opt.effectHint}</p>`;
+      card.addEventListener('click', () => {
+        const st = Game.getState();
+        st.choices.participateAction = key;
+        st.choices.participate = (opt.action !== 'rest' && opt.action !== 'focusLife');
+        st.choices.participationMethod = null;
+        st.choices.tokutenSelections = [];
+        renderParticipateCards(st);
+        if (st.choices.participate) {
+          renderMethodCards(st); setPhase('week_method');
+        } else {
+          setPhase('week_decision');
+        }
+        updateSummary(st);
+      });
+      container.appendChild(card);
+    }
+  }
+
   // ★ 动态渲染参与方式卡片
   function renderMethodCards(s) {
     const container = $('#method-cards'); if (!container) return;
@@ -184,7 +213,10 @@ const UI = (() => {
         const st = Game.getState(); if (!m) return;
         if (st.economy < m.cost.economy) { showToast('经济不足'); return; }
         st.choices.participationMethod = key; st.choices.cheerTargetIds = [];
-        renderMethodCards(st); renderCheerTargets(st); updateSummary(st);
+        renderMethodCards(st);
+        if (m.multiTarget) { renderPersonalCheerTargets(st, m); }
+        else { renderCheerTargets(st); }
+        updateSummary(st);
         if (m.skipTokuten) { st.choices.tokutenSelections = []; }
         else { setPhase('week_tokuten'); renderTokutenIdolGrid(st); renderTokutenSelectionsBar(st); hideTokutenConfigPanel(); }
       });
@@ -196,7 +228,9 @@ const UI = (() => {
   function renderCheerTargets(s) {
     const section = $('#cheer-targets-section'), grid = $('#cheer-targets-grid'); if (!section || !grid) return;
     if (s.choices.participationMethod !== 'cheer' || s.knownIdols.length === 0) { section.style.display = 'none'; return; }
-    section.style.display = 'block'; grid.innerHTML = '';
+    section.style.display = 'block';
+    $('.cheer-targets-title').textContent = '选择切的小偶像（可多选，每位心情-1 / 好感+5）';
+    grid.innerHTML = '';
     s.knownIdols.forEach(k => {
       const idol = s.idols.find(i => i.id === k.idolId);
       const blocked = idol && isIdolBlocked(idol);
@@ -205,6 +239,30 @@ const UI = (() => {
       card.className = 'tokuten-idol-card' + (selected ? ' configured' : '') + (blocked ? ' blocked' : '');
       card.innerHTML = `<div class="tokuten-idol-emoji">${k.emoji}</div><div class="tokuten-idol-name">${k.name}</div>${blocked ? '<div class="tokuten-idol-tag blocked-tag">🚫</div>' : ''}<div class="tokuten-idol-check">${selected ? '✓' : ''}</div>`;
       if (!blocked) card.addEventListener('click', () => { const idx = s.choices.cheerTargetIds.indexOf(k.idolId); if (idx >= 0) s.choices.cheerTargetIds.splice(idx, 1); else s.choices.cheerTargetIds.push(k.idolId); renderCheerTargets(s); updateSummary(s); });
+      grid.appendChild(card);
+    });
+  }
+
+  // ★ 个人应援目标选择（多选，按 method.targetFilter 过滤）
+  function renderPersonalCheerTargets(s, method) {
+    const section = $('#cheer-targets-section'), grid = $('#cheer-targets-grid'); if (!section || !grid) return;
+    const filter = method.targetFilter;
+    const eligible = s.idols.filter(i => !isIdolBlocked(i) && (!filter || filter(s, i)));
+    if (eligible.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    $('.cheer-targets-title').textContent = '选择想要应援的偶像（可多选）';
+    grid.innerHTML = '';
+    eligible.forEach(idol => {
+      const selected = s.choices.cheerTargetIds.includes(idol.id);
+      const card = document.createElement('div');
+      card.className = 'tokuten-idol-card' + (selected ? ' configured' : '');
+      card.innerHTML = `<div class="tokuten-idol-emoji">${idol.emoji}</div><div class="tokuten-idol-name">${idol.name}</div><div class="tokuten-idol-check">${selected ? '✓' : ''}</div>`;
+      card.addEventListener('click', () => {
+        const idx = s.choices.cheerTargetIds.indexOf(idol.id);
+        if (idx >= 0) s.choices.cheerTargetIds.splice(idx, 1);
+        else s.choices.cheerTargetIds.push(idol.id);
+        renderPersonalCheerTargets(s, method); updateSummary(s);
+      });
       grid.appendChild(card);
     });
   }
@@ -224,7 +282,7 @@ const UI = (() => {
   function updateSummary(s) {
     const cost = Game.calcWeekCost(); if (!cost) return;
     const ecoEl = $('#sum-cost-economy'); const moodEl = $('#sum-gain-mood');
-    if (cost.skip) { if (ecoEl) ecoEl.textContent = '0'; if (moodEl) moodEl.textContent = '-2'; }
+    if (cost.skip) { if (ecoEl) ecoEl.textContent = '0'; if (moodEl) moodEl.textContent = (cost.mood >= 0 ? '+' : '') + cost.mood; }
     else { if (ecoEl) ecoEl.textContent = '-' + cost.economy; if (moodEl) moodEl.textContent = (cost.mood >= 0 ? '+' : '') + cost.mood; }
     updateModifierHint(s);
   }
@@ -240,7 +298,6 @@ const UI = (() => {
 
   // ==================== 事件绑定 ====================
   function initGamePanel() {
-    $$('#action-step-decide .choice-card').forEach(card => { card.addEventListener('click', () => { const s = Game.getState(); s.choices.participate = card.dataset.participate === 'yes'; $$('#action-step-decide .choice-card').forEach(c => c.classList.remove('selected')); card.classList.add('selected'); if (s.choices.participate) { renderMethodCards(s); setPhase('week_method'); } updateSummary(s); }); });
 
     const tMinus = $('#btn-ticket-minus'); if (tMinus) tMinus.addEventListener('click', () => { if (tokutenEditTicketCount > 1) { tokutenEditTicketCount--; updateTicketCountDisplay(); updateSummary(Game.getState()); } });
     const tPlus = $('#btn-ticket-plus'); if (tPlus) tPlus.addEventListener('click', () => { if (tokutenEditTicketCount < 99) { tokutenEditTicketCount++; updateTicketCountDisplay(); updateSummary(Game.getState()); } });
@@ -265,10 +322,11 @@ const UI = (() => {
   // ==================== 确认本周 → 逐偶像会话 ====================
   async function confirmWeek() {
     const s = Game.getState(), c = s.choices;
-    if (c.participate === null) { showToast('请选择本周是否参加偶活'); setPhase('week_decision'); return; }
+    if (!c.participateAction) { showToast('请先选择本周行动'); setPhase('week_decision'); return; }
     if (c.participate) {
       if (!c.participationMethod) { showToast('请选择参与方式'); setPhase('week_method'); return; }
       const m = PARTICIPATION_METHODS[c.participationMethod];
+      if (m.multiTarget && c.cheerTargetIds.length === 0) { showToast('请至少选择一位偶像'); setPhase('week_method'); return; }
       if (!m.skipTokuten && c.tokutenSelections.length === 0) { showToast('请至少为一位偶像配置特典'); setPhase('week_tokuten'); return; }
     }
     const cost = Game.calcWeekCost();

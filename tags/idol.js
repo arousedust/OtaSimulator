@@ -65,9 +65,15 @@ const IDOL_TAG_DEFS = {
   },
   sick: {
     id: 'sick', name: '病気中', icon: '🤒',
-    desc: '身体不适，暂时无法参加特典会。', turn: 3,
+    desc: '身体不适，暂时无法参加特典会。', turn: 1,
     blockTokuten: true,
     onTick: { mental: -2 },
+  },
+  personal_cheered: {
+    id: 'personal_cheered', name: '个人应援', icon: '💝',
+    desc: '感受到了你特别的个人应援，本周特典会有不同。', turn: 1,
+    modifiers: { affectionGainMult: 1.3 },
+    playerModifiers: { tokutenMoodMult: 1.2 },
   },
   depressed: {
     id: 'depressed', name: '地雷女',

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OTA模拟器</title>
+  <title>偶活重度依赖</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700&display=swap" rel="stylesheet">
@@ -97,19 +97,10 @@
           <div class="phase-dot" id="phase-dot-tokuten" data-phase="week_tokuten">特典</div>
         </div>
 
-        <!-- 阶段1：本周参加？ -->
+        <!-- 阶段1：本周行动 -->
         <div id="action-step-decide" class="action-step active">
-          <h3>本周是否参加偶活？</h3>
-          <div class="choice-cards two-col">
-            <div class="choice-card" data-participate="yes">
-              <div class="choice-icon">✅</div><h4>参加</h4>
-              <p class="choice-cost">消耗经济</p><p class="choice-effect">提升心情</p>
-            </div>
-            <div class="choice-card" data-participate="no">
-              <div class="choice-icon">⏭️</div><h4>休息</h4>
-              <p class="choice-cost">不消耗经济</p><p class="choice-effect">心情-2</p>
-            </div>
-          </div>
+          <h3>本周行动</h3>
+          <div class="choice-cards" id="participate-cards"></div>
         </div>
 
         <!-- 阶段2：参与方式 -->

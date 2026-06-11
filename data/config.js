@@ -47,13 +47,41 @@ const PARTICIPATION_METHODS = {
     effect: { mood: 1 },
     idolEffect: { mental: 0, affection: 1 },
   },
-  focus_life: {
-    name: '专注现实生活', emoji: '🏠',
-    cost: { economy: 0 },
-    effect: { mood: 5 },
+  personal_cheer: {
+    name: '个人应援', emoji: '💝',
+    cost: { economy: 150 },
+    effect: { mood: 8 },
     skipTokuten: true,
-    requiredRest: 3,           // 累计 rest ≥ 3 才显示
-    onApplyTag: 'focusing_life',  // 首次选择时获得
+    // 至少有一个偶像切数 >= 3，且全局 cheer >= 3
+    condition: (s) => (s.actionLog.cheer || 0) >= 3 && s.idols.some(i => (s.cutCounts[i.id] || 0) >= 3),
+    idolEffect: { mental: 5, affection: 5, awareness: 2},
+    multiTarget: true,           // 多选偶像
+    targetFilter: (s, i) => (s.cutCounts[i.id] || 0) >= 3,  // 只显示切数>=3的偶像
+    onApplyIdolTag: 'personal_cheered',  // 给被选中的偶像加 tag
+  },
+};
+
+// ==================== 第一步「是否参加偶活」选项 ====================
+const PARTICIPATE_OPTIONS = {
+  participate: {
+    name: '参加', icon: '✅',
+    desc: '消耗经济，提升心情',
+    costHint: '消耗经济', effectHint: '提升心情',
+    action: 'participate',
+  },
+  rest: {
+    name: '休息', icon: '⏭️',
+    desc: '不消耗经济，心情-2',
+    costHint: '不消耗经济', effectHint: '心情-2',
+    action: 'rest',
+  },
+  focus_life: {
+    name: '专注现实生活', icon: '🏠',
+    desc: '免消耗，心情+5，获得专注标签',
+    costHint: '免消耗', effectHint: '心情+5',
+    action: 'focusLife',
+    condition: (s) => (s.actionLog.rest || 0) >= 3,    // 累计休息≥3次后可见
+    onApplyTag: 'focusing_life',
   },
 };
 
@@ -61,7 +89,7 @@ function getAvailableParticipation(state) {
   const result = {};
   const blocked = getBlockedMethods(state);
   for (const [key, m] of Object.entries(PARTICIPATION_METHODS)) {
-    if (m.requiredRest && (state.actionLog.rest || 0) < m.requiredRest) continue;
+    if (m.condition && !m.condition(state)) continue;
     if (m.requiredTag && !hasPlayerTag(state, m.requiredTag)) continue;
     if (blocked.includes(key)) continue;
     result[key] = m;

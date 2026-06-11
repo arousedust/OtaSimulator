@@ -26,9 +26,9 @@ const Game = (() => {
       economy: config.economy.initial, mood: config.mood.initial,
       playerName: name || '无名OTA',
       idols, knownIdols: [], playerTags: [],
-      cutCounts: {},
-      actionLog: { participate: 0, rest: 0, cheer: 0, watch: 0, tokuten: 0, stash: 0, totalWeeks: 0 },
-      choices: { participate: null, participationMethod: null, tokutenSelections: [], cheerTargetIds: [] },
+      cutCounts: {}, personalCheerCounts: {},
+      actionLog: { participate: 0, rest: 0, focusLife: 0, cheer: 0, watch: 0, tokuten: 0, stash: 0, totalWeeks: 0 },
+      choices: { participate: null, participateAction: null, participationMethod: null, tokutenSelections: [], cheerTargetIds: [] },
       modifiers: { economyRecoveryMod: 1, moodDrainMod: 1 },
       eventLog: [], turnEvents: [], gameOverReason: null, prevStats: null,
       _tokutenInteractions: [],
@@ -49,7 +49,7 @@ const Game = (() => {
     idol.awareness = clamp(idol.awareness ?? 50, 0, 100);
   }
   function clampPlayerStats() { state.economy = Math.max(0, state.economy); state.mood = clamp(state.mood, 0, 100); }
-  function resetChoices() { state.choices = { participate: null, participationMethod: null, tokutenSelections: [], cheerTargetIds: [] }; }
+  function resetChoices() { state.choices = { participate: null, participateAction: null, participationMethod: null, tokutenSelections: [], cheerTargetIds: [] }; }
   function addKnownIdol(idolId) {
     if (!state.knownIdols.some(k => k.idolId === idolId)) {
       const idol = state.idols.find(i => i.id === idolId);
@@ -86,7 +86,18 @@ const Game = (() => {
 
     // ★ 行动计数（在处理前记录，确保 rest 也被统计）
     state.actionLog.totalWeeks++;
-    if (!c.participate) { state.actionLog.rest++; state.mood -= 2; clampPlayerStats(); state.phase = 'week_settle'; return { skip: true }; }
+    if (!c.participate) {
+      // focusLife: 专注现实生活（从 PARTICIPATE_OPTIONS 配置）
+      if (c.participateAction === 'focusLife') {
+        state.actionLog.rest++; state.actionLog.focusLife++;
+        state.mood += 5;
+        const opt = PARTICIPATE_OPTIONS.focus_life;
+        if (opt.onApplyTag) addPlayerTag(state, opt.onApplyTag);
+        clampPlayerStats(); state.phase = 'week_settle';
+        return { skip: true };
+      }
+      state.actionLog.rest++; state.mood -= 2; clampPlayerStats(); state.phase = 'week_settle'; return { skip: true }; 
+    }
     state.actionLog.participate++;
     if (c.participationMethod) state.actionLog[c.participationMethod] = (state.actionLog[c.participationMethod] || 0) + 1;
     const method = PARTICIPATION_METHODS[c.participationMethod];
@@ -187,7 +198,7 @@ const Game = (() => {
         }
       });
 
-    } else if (method.skipTokuten) {
+    } else if (method.skipTokuten && c.participationMethod !== 'personal_cheer') {
       const targetId = c.tokutenSelections[0]?.idolId || state.idols[0].id;
       const target = state.idols.find(i => i.id === targetId);
       if (target && method.idolEffect) {
@@ -196,12 +207,26 @@ const Game = (() => {
       }
     }
 
-    // 现场应援切偶像
+    // 现场应援 / 个人应援
     if (c.participationMethod === 'cheer' && c.cheerTargetIds.length > 0) {
       c.cheerTargetIds.forEach(idolId => {
         const idol = state.idols.find(i => i.id === idolId);
         if (!idol) return;
         state.mood -= 1; idol.affection += 5;
+      });
+    }
+
+    // ★ 个人应援：给选中的偶像加 idolEffect + 授予 personal_cheered 标签
+    if (c.participationMethod === 'personal_cheer' && c.cheerTargetIds.length > 0) {
+      c.cheerTargetIds.forEach(idolId => {
+        const idol = state.idols.find(i => i.id === idolId);
+        if (!idol) return;
+        state.personalCheerCounts[idolId] = (state.personalCheerCounts[idolId] || 0) + 1;
+        if (method.idolEffect) {
+          idol.mental += method.idolEffect.mental || 0;
+          idol.affection += method.idolEffect.affection || 0;
+        }
+        addIdolTag(idol, 'personal_cheered');
       });
     }
 
@@ -378,7 +403,10 @@ const Game = (() => {
 
   function calcWeekCost() {
     const c = state.choices;
-    if (!c.participate) return { economy: 0, mood: -2, skip: true };
+    if (!c.participate) {
+      if (c.participateAction === 'focusLife') return { economy: 0, mood: 5, skip: true };
+      return { economy: 0, mood: -2, skip: true };
+    }
     const method = PARTICIPATION_METHODS[c.participationMethod];
     if (!method) return { economy: 0, mood: 0, skip: true };
     const tagMods = collectPlayerModifiers(state);

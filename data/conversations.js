@@ -122,6 +122,11 @@ const CONVERSATION_POOL = [
     trigger: { idolTag: 'jealous' },
     text: '她看到你，眼神有些躲闪，半晌才开口：「{playerName}...上次你没来，我还以为你已经不喜欢我了。发了一条微博，你看到了吗？」',
   },
+  {
+    id: 'schat_personal_cheered', type: 'special_chat',
+    trigger: { idolTag: 'personal_cheered' },
+    text: '她看到你，眼睛亮了一下：「{playerName}！谢谢你专门为我应援...真的很开心，像是有了特别的力量。」',
+  },
 
   // ===== 普通会话（按偶像状态 + 切数筛选）=====
   // 初见（切数=0）
