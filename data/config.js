@@ -76,7 +76,7 @@ const PARTICIPATE_OPTIONS = {
     action: 'rest',
   },
   focus_life: {
-    name: '专注现实生活', icon: '🏠',
+    name: '专注现生', icon: '🏠',
     desc: '免消耗，心情+5，获得专注标签',
     costHint: '免消耗', effectHint: '心情+5',
     action: 'focusLife',

@@ -15,7 +15,7 @@ function some(s, fn) { return s.idols.some(fn); }
 
 const ENDING_LIST = [
   // ===== 提前结局（isEarly:true）=====
-  { id:'early_banned', title:'出禁', isEarly:true,
+  { id:'early_banned', title:'感谢你的支持', isEarly:true,
     desc:'偶像和STF一致决定，你被禁止参加该团后续所有偶活。你的越界行为触碰了底线，地偶圈已经没有你的容身之处了...',
     condition:(s)=>some(s, i=>i.affection<AFF_M&&i.mental<=MEN_L),
   },
@@ -24,11 +24,11 @@ const ENDING_LIST = [
     condition:(s)=>some(s, i=>i.awareness<AWR_M&&i.affection>=AFF_H&&(s.cutCounts[i.id]||0)>=50),
   },
   { id:'early_dead', title:'死掉就不会变心了', isEarly:true,
-    desc:'她发现你在切其他人的时候，眼神彻底变了。那条私信只有一句话：「死掉就不会变心了」。你再也没有去过偶活。',
+    desc:'她发现你在切其他人的时候，眼神彻底变了。那条私信只有一句话：「死掉就不会变心了」。其他人再也没有见到你去偶活。',
     condition:(s)=>some(s, i=>hasIdolTag(i,'gravity')&&(i.mental<=MEN_L||i.mental<AFF_H)&&s.idols.reduce((sum,j)=>sum+((s.cutCounts[j.id]||0)-(j.id===i.id?0:0)),0)>=10),
   },
   { id:'early_economy', title:'现生的终结', isEarly:true,
-    desc:'经济完全枯竭，连最基本的应援都无法维持。你不得不退出偶像宅的世界，回归平凡生活。也许有一天，你会重新回来...',
+    desc:'经济完全枯竭，连最基本的应援都无法维持。你不得不退出偶像宅的世界，回归平凡生活。',
     condition:(s)=>s.economy<=0,
   },
   { id:'early_mood', title:'崩溃', isEarly:true,
@@ -54,11 +54,11 @@ const ENDING_LIST = [
     condition:(s)=>hasPlayerTag(s,'graduated_ota'),
   },
   { id:'end_transferred', title:'工作调动', isEarly:false,
-    desc:'一纸调令把你派到了千里之外的城市。临走前最后一场偶活，她似乎察觉到了什么，在你临走时多塞了一张宿题切：「不管在哪，我都会继续加油的」。回家的地铁上，你哭了一路。',
+    desc:'一纸调令把你派到了千里之外的城市。临走前最后一场偶活，她似乎察觉到了什么，在你临走时她在背面写了一段文字：「不管在哪里，我们的心都会在一起的」',
     condition:(s)=>hasPlayerTag(s,'transferred'),
   },
   { id:'end_hospital', title:'现场被误伤住院', isEarly:false,
-    desc:'开圈的时候没能闪开，你被撞飞在地板上。醒来的时候已经在医院了，手机里十几条未读——全是她的微博@，问你有没有事。你笑了笑，回了一条：「没事，下次还来。」',
+    desc:'开圈的时候你被撞掉了几颗牙。醒来的时候已经在医院了，她的微博@，问你有没有事。你笑了笑，回了一条：「没事，下次还来。」',
     condition:(s)=>hasPlayerTag(s,'injured_hospital'),
   },
   { id:'end_arrested', title:'现场其他人报警被抓', isEarly:false,
@@ -80,7 +80,7 @@ const ENDING_LIST = [
     condition:(s)=>many(s,4,i=>i.awareness>=AWR_M&&i.awareness<AWR_H&&i.affection>=AFF_H&&i.mental>=MEN_H),
   },
   { id:'end_oldman', title:'崩老头', isEarly:false,
-    desc:'你对每个人都投入了巨量经济，每张特典券都是你钱包的泪水。但是偶像们对你的存在似乎并没有特别的意识。你就像一台没有感情的出券机器。圈子里有人叫你「爆金币的崩老头」，你只是苦笑了一下，又买了一张券。',
+    desc:'你对每个人都投入了巨量经济，每张特典券都是你钱包的泪水。但是偶像们对你的存在似乎并没有特别的意识。你就像一台没有感情的出券机器，又是一场偶活，又买了一堆券。',
     condition:(s)=>many(s,4,i=>i.awareness<AWR_M&&(s.cutCounts[i.id]||0)>=30),
   },
 
@@ -122,7 +122,7 @@ const ENDING_LIST = [
 
   // ===== 兜底 =====
   { id:'lost_soul', title:'迷途之羊', isEarly:false,
-    desc:'四个月过去了，你既没有建立深厚的感情，也没有找到应援的意义。偶像的世界对你来说，仍然是遥不可及的星光。也许下次投入更多一些？也许换一个团？也许...也许你根本不适合当OTA。',
+    desc:'时间过去，你既没有建立深厚的感情，也没有找到应援的意义。偶像的世界对你来说，仍然是是一团迷雾，但谁的生活又不是呢',
     condition:()=>true,
   },
 ];
