@@ -8,21 +8,21 @@ const EVENTS_MONTHLY = [
   { id:'evt_lucky', name:'幸运抽奖', desc:'在活动现场抽中了稀有周边！', icon:'🍀', condition:()=>true, effect:{mood:15}, idolEffect:{affection:2}, grantTag:'lucky_star', priority:3 },
   { id:'evt_fan_friend', name:'结识同好', desc:'在现场认识了同推的伙伴。', icon:'🤝', condition:(s)=>s.mood>30, effect:{mood:10}, idolEffect:{awareness:1}, priority:3 },
   { id:'evt_flu', name:'感冒了', desc:'最近太拼结果病倒了。', icon:'🤒', condition:(s)=>s.mood<40&&s.turn>5, effect:{mood:-10}, priority:2 },
-  { id:'evt_sale', name:'周边打折', desc:'官方周边打折！省了一笔钱。', icon:'🛒', condition:()=>true, effect:{economy:500}, priority:3 },
+  { id:'evt_sale', name:'周边打折', desc:'官方周边打折！省了一笔钱。', icon:'🛒', condition:()=>true, effect:{economy:300}, priority:3 },
   { id:'evt_burnout', name:'倦怠期', desc:'最近对一切都提不起兴趣...', icon:'😔', condition:(s)=>s.mood<30, effect:{mood:-12}, idolEffect:{affection:-3}, priority:2 },
   { id:'evt_good_news', name:'偶像上电视', desc:'你的推上了综艺节目！', icon:'📺', condition:()=>true, effect:{mood:12}, idolEffect:{mental:2,awareness:2}, priority:3 },
   { id:'evt_miss_anniversary', name:'错过了出道纪念日', desc:'完全忘了今天是推的出道纪念日...', icon:'📅', condition:(s)=>s.mood<30&&s.turn>8, effect:{mood:-8}, idolEffect:{affection:-5,mental:-3,awareness:-2}, priority:2 },
   { id:'evt_well_rested', name:'状态绝佳', desc:'调整好了状态，感觉元气满满！', icon:'✨', condition:(s)=>s.mood>=80, effect:{mood:12}, grantTag:'motivated_fan', priority:3 },
-  { id:'evt_economy_crisis', name:'物价上涨', desc:'最近什么都在涨价...', icon:'📈', condition:(s)=>s.turn>12, effect:{economy:-800}, priority:2 },
-  { id:'evt_lost_item', name:'遗失物品', desc:'在活动现场不小心丢了东西。', icon:'😭', condition:()=>true, effect:{economy:-300,mood:-5}, priority:3 },
+  { id:'evt_economy_crisis', name:'物价上涨', desc:'最近什么都在涨价...', icon:'📈', condition:(s)=>s.turn>12, effect:{economy:-500}, priority:2 },
+  { id:'evt_lost_item', name:'遗失物品', desc:'在活动现场不小心丢了东西。', icon:'😭', condition:()=>true, effect:{economy:-200,mood:-5}, priority:3 },
 
   // ── 计数触发 ──
   { id:'evt_veteran_ota', name:'老手OTA', desc:'参加了十几次偶活，已经是经验丰富的应援者了！', icon:'🏆', condition:(s)=>s.actionLog.participate>=10, effect:{mood:15}, idolEffect:{_all:{affection:3,awareness:1}}, grantTag:'stage_expert', priority:2 },
   { id:'evt_underground', name:'地下应援者', desc:'你的地藏行为引起了一些同好的注意...', icon:'📦', condition:(s)=>(s.actionLog.stash||0)>=5, effect:{mood:8}, idolEffect:{_all:{affection:5}}, priority:2 },
-  { id:'evt_cheer_master', name:'应援达人', desc:'场场不落地来现场应援，热情感染了周围的人！', icon:'🔥', condition:(s)=>(s.actionLog.cheer||0)>=8, effect:{mood:10,economy:-200}, idolEffect:{_all:{mental:3,affection:2}}, grantTag:'motivated_fan', priority:2 },
+  { id:'evt_cheer_master', name:'应援达人', desc:'场场不落地来现场应援，热情感染了周围的人！', icon:'🔥', condition:(s)=>(s.actionLog.cheer||0)>=8, effect:{mood:10,economy:-150}, idolEffect:{_all:{mental:3,affection:2}}, grantTag:'motivated_fan', priority:2 },
   { id:'evt_lazy_week', name:'好久没活动了', desc:'连续几周没参加偶活，有些生疏了...', icon:'😴', condition:(s)=>(s.actionLog.rest||0)>=4&&s.actionLog.rest%4===0, effect:{mood:-5}, priority:3 },
   { id:'evt_early_phase', name:'新手期结束', desc:'逐渐适应了OTA生活，找到自己的应援风格。', icon:'🌱', condition:(s)=>s.actionLog.totalWeeks===8, effect:{mood:10}, priority:1 },
-  { id:'evt_midgame_boost', name:'中期冲刺', desc:'游戏进入中期，决定更加努力地应援！', icon:'🚀', condition:(s)=>s.turn===12, effect:{mood:15,economy:1000}, idolEffect:{_all:{affection:2}}, priority:1 },
+  { id:'evt_midgame_boost', name:'中期冲刺', desc:'游戏进入中期，决定更加努力地应援！', icon:'🚀', condition:(s)=>s.turn===12, effect:{mood:12,economy:600}, idolEffect:{_all:{affection:2}}, priority:1 },
 
   // ── 偶像相关 ──
   { id:'evt_idol_sick', name:'偶像体调不良', desc:'你的推最近看起来身体不太好...', icon:'🤕', condition:(s)=>s.turn>6&&s.idols.some(i=>i.mental<50), effect:{mood:-8}, idolEffect:{_all:{mental:-5,awareness:-2}}, priority:1 },
@@ -49,22 +49,22 @@ const EVENTS_MONTHLY = [
   },
 
   // ── 身份相关 ──
-  { id:'evt_bonus', name:'奖金到账', desc:'公司发了季度奖金！', icon:'💰', condition:(s)=>s.character==='worker', effect:{economy:1500}, priority:1 },
+  { id:'evt_bonus', name:'奖金到账', desc:'公司发了季度奖金！', icon:'💰', condition:(s)=>s.character==='worker', effect:{economy:2000}, priority:1 },
   { id:'evt_overtime', name:'加班地狱', desc:'这月疯狂加班，身心俱疲。', icon:'😰', condition:(s)=>s.character==='worker', effect:{mood:-12}, priority:2 },
   { id:'evt_time_master', name:'时间管理大师', desc:'工作再忙也坚持参加偶活！', icon:'⏰', condition:(s)=>s.character==='worker'&&s.actionLog.participate>=15, effect:{mood:12}, idolEffect:{_all:{affection:3}}, priority:2 },
-  { id:'evt_parttime', name:'兼职收入', desc:'周末做了兼职，赚了些零花钱。', icon:'💵', condition:(s)=>s.character==='student', effect:{economy:800}, priority:1 },
+  { id:'evt_parttime', name:'兼职收入', desc:'周末做了兼职，赚了些零花钱。', icon:'💵', condition:(s)=>s.character==='student', effect:{economy:400}, priority:1 },
   { id:'evt_exam', name:'考试周', desc:'期末考试来了，不得不放下应援专心复习。', icon:'📚', condition:(s)=>s.character==='student'&&s.turn>=3, effect:{mood:-10}, priority:2 },
-  { id:'evt_scholarship', name:'奖学金到账', desc:'努力学习获得奖学金！', icon:'🎓', condition:(s)=>s.character==='student'&&(s.actionLog.stash||0)>=5, effect:{economy:1200}, priority:2 },
+  { id:'evt_scholarship', name:'奖学金到账', desc:'努力学习获得奖学金！', icon:'🎓', condition:(s)=>s.character==='student'&&(s.actionLog.stash||0)>=5, effect:{economy:600}, priority:2 },
 
   // ── 特殊结局事件（turn≥3，低概率触发）──
   { id:'evt_school_end', name:'毕业季到来', desc:'四年大学转眼就到了尽头。你拿到毕业证的那天，忽然意识到以后再也不能像现在这样每周都来偶活了。', icon:'🎓',
-    condition:(s)=>s.character==='student'&&s.turn>=3&&Math.random()<0.2, priority:1, effect:{mood:-8,economy:500}, grantTag:'graduated_ota' },
+    condition:(s)=>s.character==='student'&&s.turn>=3&&Math.random()<0.2, priority:1, effect:{mood:-8,economy:300}, grantTag:'graduated_ota' },
   { id:'evt_transfer', name:'公司调动通知', desc:'HR发来了一封邮件：「恭喜你，获得了去分公司的发展机会。」你没有感到开心。你知道这意味着要离开这个城市，也意味着要和偶活告别了。', icon:'📦',
-    condition:(s)=>s.character==='worker'&&s.turn>=3&&Math.random()<0.2, priority:1, effect:{mood:-8,economy:800}, grantTag:'transferred' },
+    condition:(s)=>s.character==='worker'&&s.turn>=3&&Math.random()<0.2, priority:1, effect:{mood:-8,economy:500}, grantTag:'transferred' },
   { id:'evt_mosh_injured', name:'现场误伤', desc:'mosh开圈的时候，你没有及时闪开。一阵巨大的冲击之后，世界天旋地转。醒来时已经在医院的走廊上了，手臂缠着绷带。STF私信你：「非常抱歉！医药费我们来承担。」', icon:'🏥',
-    condition:(s)=>s.actionLog.cheer>=5&&Math.random()<0.15, priority:1, effect:{mood:-15,economy:-500}, grantTag:'injured_hospital' },
+    condition:(s)=>s.actionLog.cheer>=5&&Math.random()<0.15, priority:1, effect:{mood:-15,economy:-400}, grantTag:'injured_hospital' },
   { id:'evt_police', name:'警察出动', desc:'不知道谁报的警。几个便衣走进来的时候，台上的偶像还在跳，台下的OTA还在喊mix。灯光骤然亮起——所有人被要求出示身份证。那晚你在派出所蹲到了天亮。', icon:'🚔',
-    condition:(s)=>s.actionLog.cheer>=8&&Math.random()<0.1, priority:1, effect:{mood:-20,economy:-1000}, grantTag:'arrested_incident' },
+    condition:(s)=>s.actionLog.cheer>=8&&Math.random()<0.1, priority:1, effect:{mood:-20,economy:-800}, grantTag:'arrested_incident' },
 
   // ── 地偶文化事件 ──
   { id:'evt_change_oshi', name:'转推', desc:'最近开始频繁切另一位偶像的券了。推上也有同担在议论你，问你是不是跑路了。你看着以前的主推的微博，有点说不清的愧疚感。', icon:'🔄',

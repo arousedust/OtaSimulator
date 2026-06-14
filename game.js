@@ -62,11 +62,9 @@ const Game = (() => {
     const config = CHARACTER_CONFIGS[state.character];
     state.prevStats = { economy: state.economy, mood: state.mood };
     const ecoRecovery = Math.round(config.economy.recovery * state.modifiers.economyRecoveryMod);
-    const moodDrain = Math.round(config.mood.monthlyDrain * state.modifiers.moodDrainMod);
     const tagMods = collectPlayerModifiers(state);
     state.economy += Math.round(ecoRecovery * (tagMods.monthlyEconomyMult || 1));
-    state.mood -= Math.round(moodDrain * (tagMods.monthlyMoodDrainMult || 1));
-    state.modifiers = { economyRecoveryMod: 1, moodDrainMod: 1 };
+    state.modifiers = { economyRecoveryMod: 1 };
     state.week = 1; state.turnEvents = [];
     tickPlayerTags(state); tickIdolTags(state);
 
@@ -86,6 +84,11 @@ const Game = (() => {
 
     // ★ 行动计数（在处理前记录，确保 rest 也被统计）
     state.actionLog.totalWeeks++;
+
+    // ★ 每周心情自然消耗
+    const charCfg = CHARACTER_CONFIGS[state.character];
+    state.mood -= charCfg.mood.weeklyDrain || 5;
+
     if (!c.participate) {
       // focusLife: 专注现实生活（从 PARTICIPATE_OPTIONS 配置）
       if (c.participateAction === 'focusLife') {
@@ -96,7 +99,7 @@ const Game = (() => {
         clampPlayerStats(); state.phase = 'week_settle';
         return { skip: true };
       }
-      state.actionLog.rest++; state.mood -= 2; clampPlayerStats(); state.phase = 'week_settle'; return { skip: true }; 
+      state.actionLog.rest++; state.mood -= (charCfg.mood.restDrain || 2); clampPlayerStats(); state.phase = 'week_settle'; return { skip: true }; 
     }
     state.actionLog.participate++;
     if (c.participationMethod) state.actionLog[c.participationMethod] = (state.actionLog[c.participationMethod] || 0) + 1;
@@ -407,8 +410,11 @@ const Game = (() => {
   function calcWeekCost() {
     const c = state.choices;
     if (!c.participate) {
-      if (c.participateAction === 'focusLife') return { economy: 0, mood: 5, skip: true };
-      return { economy: 0, mood: -2, skip: true };
+      const cfg = CHARACTER_CONFIGS[state.character];
+      const wd = cfg.mood.weeklyDrain || 5;
+      const rd = cfg.mood.restDrain || 2;
+      if (c.participateAction === 'focusLife') return { economy: 0, mood: -wd + 5, skip: true };
+      return { economy: 0, mood: -(wd + rd), skip: true };
     }
     const method = PARTICIPATION_METHODS[c.participationMethod];
     if (!method) return { economy: 0, mood: 0, skip: true };

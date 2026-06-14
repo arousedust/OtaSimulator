@@ -11,12 +11,12 @@ const CHARACTER_CONFIGS = {
   worker: {
     name: '社畜',
     economy: { initial: 5000, recovery: 3000 },
-    mood: { initial: 70, monthlyDrain: 20 },
+    mood: { initial: 60, weeklyDrain: 16, restDrain: 3 },
   },
   student: {
     name: '学生',
-    economy: { initial: 2000, recovery: 1000 },
-    mood: { initial: 70, monthlyDrain: 5 },
+    economy: { initial: 800, recovery: 500 },
+    mood: { initial: 70, weeklyDrain: 5, restDrain: 2 },
   },
 };
 
@@ -24,34 +24,34 @@ const CHARACTER_CONFIGS = {
 const PARTICIPATION_METHODS = {
   cheer: {
     name: '现场应援', emoji: '📣',
-    cost: { economy: 100 },
-    effect: { mood: 5 },
+    cost: { economy: 60 },
+    effect: { mood: 4 },
     idolEffect: { mental: 3, affection: 3 },
   },
   watch: {
     name: '只是看现场', emoji: '👀',
-    cost: { economy: 80 },
+    cost: { economy: 60 },
     effect: { mood: 3 },
     idolEffect: { mental: 0, affection: 0 },
     skipTokuten: true,
   },
   tokuten: {
     name: '只参与特典', emoji: '🎫',
-    cost: { economy: 80 },
-    effect: { mood: 0 },
+    cost: { economy: 60 },
+    effect: { mood: -2 },
     idolEffect: { mental: -3, affection: 0 },
   },
   stash: {
     name: '地藏', emoji: '📦',
-    cost: { economy: 80 },
+    cost: { economy: 60 },
     effect: { mood: 1 },
     idolEffect: { mental: 0, affection: 1 },
   },
   personal_cheer: {
     name: '个人应援', emoji: '💝',
-    cost: { economy: 150 },
-    perTargetCost: { economy: 80 },  // 每多选一位偶像额外花费
-    effect: { mood: 8 },
+    cost: { economy: 120 },
+    perTargetCost: { economy: 60 },  // 每多选一位偶像额外花费
+    effect: { mood: 6 },
     // 至少有一个偶像切数 >= 3，且全局 cheer >= 3
     condition: (s) => (s.actionLog.cheer || 0) >= 3 && s.idols.some(i => (s.cutCounts[i.id] || 0) >= 3),
     idolEffect: { mental: 5, affection: 5, awareness: 2},
@@ -72,7 +72,7 @@ const PARTICIPATE_OPTIONS = {
   rest: {
     name: '休息', icon: '⏭️',
     desc: '不消耗经济，心情-2',
-    costHint: '不消耗经济', effectHint: '心情-2',
+    costHint: '不消耗经济', effectHint: '心情额外下降',
     action: 'rest',
   },
   focus_life: {
@@ -99,13 +99,13 @@ function getAvailableParticipation(state) {
 
 // ==================== 特典券系统（按张数购买，后台量级区分） ====================
 
-const TICKET_PRICE = 100;
+const TICKET_PRICE = 80;
 
 const TICKET_TIER = {
   punch_card: { min: 1, max: 2, key: 'punch_card', name: '打卡', emoji: '👋', weight: 1.0, eventChanceBase: 0.03 },
-  small:      { min: 3, max: 5, key: 'small', name: '小券', emoji: '🎫', weight: 1.5, eventChanceBase: 0.06 },
-  large:      { min: 6, max: 10, key: 'large', name: '大券', emoji: '🎟️', weight: 2.5, eventChanceBase: 0.12 },
-  boss:       { min: 11, max: 99, key: 'boss', name: '大爹', emoji: '🌟', weight: 4.0, eventChanceBase: 0.20 },
+  small:      { min: 3, max: 9, key: 'small', name: '小券', emoji: '🎫', weight: 1.5, eventChanceBase: 0.06 },
+  large:      { min: 10, max: 19, key: 'large', name: '大券', emoji: '🎟️', weight: 2.5, eventChanceBase: 0.12 },
+  boss:       { min: 20, max: 99, key: 'boss', name: '大爹', emoji: '🌟', weight: 4.0, eventChanceBase: 0.20 },
 };
 
 function getTicketTier(count) {

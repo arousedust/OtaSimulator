@@ -69,7 +69,7 @@ const UI = (() => {
   function updateMonthInfo(s) {
     const config = CHARACTER_CONFIGS[s.character]; if (!config) return;
     const recEl = $('#rec-economy'); if (recEl) recEl.textContent = '+' + Math.round(config.economy.recovery * s.modifiers.economyRecoveryMod);
-    const drainEl = $('#drain-mood'); if (drainEl) drainEl.textContent = '-' + Math.round(config.mood.monthlyDrain * s.modifiers.moodDrainMod);
+    const drainEl = $('#drain-mood'); if (drainEl) { const wd = config.mood.weeklyDrain || 5; drainEl.textContent = '-' + wd + '/周'; }
   }
   function updateEventLog(s) {
     const log = $('#event-log'); if (!log) return;
