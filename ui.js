@@ -498,10 +498,10 @@ const UI = (() => {
     const s = Game.getState(), ending = Game.determineEnding();
     $('#ending-title').textContent = ending.title; $('#ending-desc').textContent = ending.desc;
     const reasonEl = $('#ending-reason');
-    if (ending.isEarly) { reasonEl.style.display = 'block'; reasonEl.textContent = s.gameOverReason === 'early_special' && s._earlyEndReason ? s._earlyEndReason : { early_economy:'经济已完全耗尽...', early_mood:'心情已跌至谷底...', early_idol_mental:'偶像心理防线崩溃...', early_idol_affection:'与偶像的心渐行渐远...', early_idol_awareness:'偶像们迷失了方向...', early_special:'发生了意想不到的事...' }[s.gameOverReason] || '游戏提前结束。'; } else reasonEl.style.display = 'none';
+    if (ending.isEarly) { reasonEl.style.display = 'block'; reasonEl.textContent = s.gameOverReason === 'early_special' && s._earlyEndReason ? s._earlyEndReason : { early_economy:'经济已完全耗尽...', early_mood:'心情已跌至谷底...', early_idol_mental:'偶像心理防线崩溃...', early_idol_affection:'与偶像的心渐行渐远...', early_idol_awareness:'偶像们迷失了方向...', early_banned:'因越界行为被出禁...', early_private:'私联行为曝光...', early_dead:'重力系的致命信息...', early_special:'发生了意想不到的事...' }[s.gameOverReason] || '游戏提前结束。'; } else reasonEl.style.display = 'none';
 
     const ps = $('#ending-player-stats'); ps.innerHTML = '';
-    [{label:'💰 经济',value:s.economy},{label:'💖 心情',value:s.mood},{label:'📅 回合',value:s.turn+'/25个月'}].forEach(st => { const d = document.createElement('div'); d.className = 'ending-stat-item'; d.innerHTML = `<span class="value">${st.value}</span>`; ps.appendChild(d); });
+    [{label:'💰 经济',value:s.economy},{label:'💖 心情',value:s.mood},{label:'📅 回合',value:s.turn+'/'+TOTAL_MONTHS+'个月'}].forEach(st => { const d = document.createElement('div'); d.className = 'ending-stat-item'; d.innerHTML = `<span class="value">${st.value}</span>`; ps.appendChild(d); });
 
     const is = $('#ending-idol-stats'); is.innerHTML = '';
     s.idols.forEach(idol => {

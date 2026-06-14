@@ -56,6 +56,37 @@ const EVENTS_MONTHLY = [
   { id:'evt_exam', name:'考试周', desc:'期末考试来了，不得不放下应援专心复习。', icon:'📚', condition:(s)=>s.character==='student'&&s.turn>=3, effect:{mood:-10}, priority:2 },
   { id:'evt_scholarship', name:'奖学金到账', desc:'努力学习获得奖学金！', icon:'🎓', condition:(s)=>s.character==='student'&&(s.actionLog.stash||0)>=5, effect:{economy:1200}, priority:2 },
 
+  // ── 特殊结局事件（turn≥3，低概率触发）──
+  { id:'evt_school_end', name:'毕业季到来', desc:'四年大学转眼就到了尽头。你拿到毕业证的那天，忽然意识到以后再也不能像现在这样每周都来偶活了。', icon:'🎓',
+    condition:(s)=>s.character==='student'&&s.turn>=3&&Math.random()<0.2, priority:1, effect:{mood:-8,economy:500}, grantTag:'graduated_ota' },
+  { id:'evt_transfer', name:'公司调动通知', desc:'HR发来了一封邮件：「恭喜你，获得了去分公司的发展机会。」你没有感到开心。你知道这意味着要离开这个城市，也意味着要和偶活告别了。', icon:'📦',
+    condition:(s)=>s.character==='worker'&&s.turn>=3&&Math.random()<0.2, priority:1, effect:{mood:-8,economy:800}, grantTag:'transferred' },
+  { id:'evt_mosh_injured', name:'现场误伤', desc:'mosh开圈的时候，你没有及时闪开。一阵巨大的冲击之后，世界天旋地转。醒来时已经在医院的走廊上了，手臂缠着绷带。STF私信你：「非常抱歉！医药费我们来承担。」', icon:'🏥',
+    condition:(s)=>s.actionLog.cheer>=5&&Math.random()<0.15, priority:1, effect:{mood:-15,economy:-500}, grantTag:'injured_hospital' },
+  { id:'evt_police', name:'警察出动', desc:'不知道谁报的警。几个便衣走进来的时候，台上的偶像还在跳，台下的OTA还在喊mix。灯光骤然亮起——所有人被要求出示身份证。那晚你在派出所蹲到了天亮。', icon:'🚔',
+    condition:(s)=>s.actionLog.cheer>=8&&Math.random()<0.1, priority:1, effect:{mood:-20,economy:-1000}, grantTag:'arrested_incident' },
+
+  // ── 地偶文化事件 ──
+  { id:'evt_change_oshi', name:'转推', desc:'最近开始频繁切另一位偶像的券了。推上也有同担在议论你，问你是不是跑路了。你看着以前的主推的微博，有点说不清的愧疚感。', icon:'🔄',
+    condition:(s)=>s.knownIdols.length>=2&&s.turn>=3&&s.idols.some(i=>i.affection>=30&&(s.cutCounts[i.id]||0)>=10)&&Math.random()<0.25, priority:2,
+    choices:[
+      { text:'正式转推', desc:'你在微博上宣布了新的主推。旧推默默取关了你。也许是解脱吧。', effect:{mood:-3}, idolEffect:{_all:{affection:-2,mental:-2}} },
+      { text:'坚持初心', desc:'你咬咬牙继续推原来那位。虽然很累，但看到她开心的样子，你觉得值得。', effect:{mood:5}, idolEffect:{_all:{affection:3}} },
+    ],
+  },
+  { id:'evt_board_exposed', name:'板子上出现了你的推', desc:'揭示板上出现了一条投稿，说某位偶像私下和粉丝加了微信，虽然只是「为了更好地了解应援需求」。评论区吵起来了。', icon:'📋',
+    condition:(s)=>s.turn>=4&&s.idols.some(i=>i.awareness<50)&&Math.random()<0.2, priority:1,
+    effect:{mood:-6}, idolEffect:{_all:{mental:-3,awareness:-2}}, grantTag:'rumor_monger' },
+  { id:'evt_newbie_boost', name:'新人红利', desc:'因为是新人OTA，偶像们都给足了营业。特典会的时候每个人都甜得不行，感受到了被重视的感觉。', icon:'🌱',
+    condition:(s)=>s.actionLog.participate>=1&&s.actionLog.participate<=3, priority:1,
+    effect:{mood:15}, idolEffect:{_all:{affection:2,awareness:1}}, grantTag:'newbie' },
+  { id:'evt_stash_found', name:'地藏被发现了', desc:'本以为躲在角落里没人注意到你，结果有个偶像在MC环节说：「后排那位带着📦的朋友，谢谢你每次都默默支持！」全场目光都投向你。', icon:'📦',
+    condition:(s)=>(s.actionLog.stash||0)>=3&&Math.random()<0.3, priority:2,
+    effect:{mood:12}, idolEffect:{_all:{affection:2,awareness:1}}, grantTag:'motivated_fan' },
+  { id:'evt_economy_warning', name:'钱包告急', desc:'最近几次拼盘的门票和特典券花得有点狠，月底一看余额，心里咯噔一下。需要想想要不要调整应援节奏了。', icon:'💸',
+    condition:(s)=>s.economy<1000&&s.turn>=2&&Math.random()<0.35, priority:2,
+    effect:{mood:-5}, grantTag:'broke' },
+
   // ── 标签触发: requiredTag 优先级 > condition ──
   { id:'evt_gachi_confession', name:'心意察觉', desc:'最近你对她特别上心...她似乎也察觉到了什么。这天她突然约你私下聊聊。', icon:'💝', requiredTag:(s)=>!!getGachiTag(s), condition:()=>Math.random()<0.3, priority:1,
     choices:[

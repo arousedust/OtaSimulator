@@ -91,6 +91,20 @@ const IDOL_TAG_DEFS = {
     hidden: true, turn: -1,
     onTick: { awareness: 1 },
   },
+  tsundere: {
+    id: 'tsundere', name: '傲娇', icon: '😤',
+    desc: '每次特典会都对你很冷淡，但奇怪的是好感涨得比谁都多。',
+    hidden: true, turn: -1,
+    modifiers: { affectionGainMult: 1.5 },
+    playerModifiers: { tokutenMoodMult: 0.6 },
+  },
+  cool_beauty: {
+    id: 'cool_beauty', name: 'クール美人', icon: '🖤',
+    desc: '她不太爱说话，但每次简短的话语都让人觉得被记在心里了。',
+    hidden: true, turn: -1,
+    modifiers: { affectionGainMult: 1.1, mentalGainMult: 1.2 },
+    playerModifiers: { tokutenMoodMult: 1.05 },
+  },
 };
 
 // ==================== 偶像标签操作 ====================

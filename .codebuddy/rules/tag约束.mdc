@@ -1,0 +1,8 @@
+---
+description: 每当生成依赖tag的事件、会话、基础行动时，同步检查tag文件中是否有该tag，没有则添加该tag
+alwaysApply: false
+enabled: true
+updatedAt: 2026-06-14T09:29:14.951Z
+provider: 
+---
+

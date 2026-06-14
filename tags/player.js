@@ -23,19 +23,19 @@ const PLAYER_TAG_DEFS = {
   gentle_soul:   { id:'gentle_soul', name:'温柔灵魂', icon:'🌸', desc:'你以温和的方式与人相处，偶像似乎注意到了', turn:12,
                     modifiers:{ idolMentalMult:1.25, tokutenMoodMult:0.9 } },
 
-  fatigue:   { id:'fatigue', name:'疲劳', icon:'😫', desc:'身体透支中，参加活动心情回复降低', turn:12,
-                onTick:{ economy:-50, mood:-1 }, modifiers:{ tokutenMoodMult:0.6, participateMoodMult:0.65 },
+  fatigue:   { id:'fatigue', name:'疲劳', icon:'😫', desc:'身体透支中，参加活动心情回复降低', turn:3,
+                onTick:{ economy:-200, mood:-1 }, modifiers:{ tokutenMoodMult:0.6, participateMoodMult:0.65 },
                 actionPenalty:{ cheer:{ mood:-3, economy:50 } } },
-  motivated: { id:'motivated', name:'干劲十足', icon:'⚡', desc:'状态正佳，做什么都充满动力', turn:8,
+  motivated: { id:'motivated', name:'干劲十足', icon:'⚡', desc:'状态正佳，做什么都充满动力', turn:1,
                 onTick:{ mood:2, economy:75 }, modifiers:{ tokutenMoodMult:1.2, participateMoodMult:1.15 } },
   injured:   { id:'injured', name:'受伤', icon:'🤕', desc:'不小心受了伤，活动花费增加且无法现场应援', turn:8,
-                onTick:{ mood:-1 }, modifiers:{ tokutenEconomyMult:1.3, participateEconomyMult:1.25 },
+                onTick:{ mood:-10, economy:-500}, modifiers:{ tokutenEconomyMult:1.3, participateEconomyMult:1.25 },
                 blockMethods: ['cheer'] },
   lucky:     { id:'lucky', name:'好运连连', icon:'🍀', desc:'最近运气特别好，一切都很顺', turn:8,
                 onTick:{ economy:125, mood:1 }, modifiers:{ tokutenEventChanceAdd:0.1, tokutenMoodMult:1.1 } },
 
   debt_mode:  { id:'debt_mode', name:'借贷度日', icon:'💳', desc:'借了花呗，每月到手经济变多但心情大幅下降', turn:16,
-                onTick:{ economy:200, mood:-4 }, modifiers:{ monthlyEconomyMult:1.3, monthlyMoodDrainMult:1.5, tokutenMoodMult:0.75 } },
+                onTick:{ economy:200, mood:-4 }, modifiers:{ monthlyEconomyMult:1.3, monthlyMoodDrainMult:2, tokutenMoodMult:0.75 } },
   low_spirit: { id:'low_spirit', name:'心灰意冷', icon:'💔', desc:'近期状态低迷，参与活动的心情回复大打折扣', turn:8,
                 onTick:{ mood:-2 }, modifiers:{ tokutenMoodMult:0.5, participateMoodMult:0.6 } },
   super_fan:  { id:'super_fan', name:'超级粉丝', icon:'🌟', desc:'热情高涨的应援让好感获取倍增', turn:8,
@@ -55,11 +55,27 @@ const PLAYER_TAG_DEFS = {
   focusing_life: { id:'focusing_life', name:'专注现实', icon:'🏠', desc:'你开始平衡应援与现实生活，经济改善但特典投入感降低。', turn:16,
                    modifiers:{ monthlyEconomyMult:1.3, monthlyMoodDrainMult:0.5, tokutenMoodMult:0.8 } },
 
+  // ── 特殊结局标签（turn:-1 一次性，用于触发特定结局）──
+  graduated_ota:    { id:'graduated_ota', name:'毕业', icon:'🎓', desc:'你从学校毕业，即将面对新生活。', turn:-1 },
+  transferred:      { id:'transferred', name:'工作调动', icon:'📦', desc:'一纸调令改变了你的人生轨迹。', turn:-1 },
+  injured_hospital: { id:'injured_hospital', name:'现场受伤住院', icon:'🏥', desc:'偶活现场出了意外，你受伤住院了。', turn:-1 },
+  arrested_incident:{ id:'arrested_incident', name:'警察出动', icon:'🚔', desc:'偶活现场有人报警，你被带走了...', turn:-1 },
+
   // ── 初始/被动玩家标签（hidden:true, turn:-1 永久）──
   it_ota:       { id:'it_ota', name:'IT社畜', icon:'💻', desc:'你有稳定的IT工作，每月收入更高。', hidden:true, turn:-1,
                    modifiers:{ monthlyEconomyMult:1.2 } },
-  natural_charm: { id:'natural_charm', name:'天生亲和', icon:'🌸', desc:'你天生具有亲和力，与偶像互动时更容易获得好感。', hidden:true, turn:-1,
+  handsome: { id:'handsome', name:'池面', icon:'🌸', desc:'从各种意义上来说，你都很好看。', hidden:true, turn:-1,
                    modifiers:{ idolAffectionMult:1.1 } },
+
+  // ── 玩家游戏内标签 ──
+  photographer: { id:'photographer', name:'炮哥', icon:'📸', desc:'你拿着相机在杆位拍了不少好图，偶像们对你的镜头记忆深刻。', turn:8,
+                  modifiers:{ idolAffectionMult:1.1, tokutenMoodMult:1.1 } },
+  newbie:       { id:'newbie', name:'初见さん', icon:'🌱', desc:'第一次来偶活，偶像们对新人特别温柔。', turn:2,
+                  modifiers:{ tokutenMoodMult:1.2, idolAffectionMult:1.15 } },
+  broke:        { id:'broke', name:'破产边缘', icon:'💸', desc:'钱包见底，必须精打细算。', turn:4,
+                  onTick:{ mood:-1 }, modifiers:{ tokutenEconomyMult:0.7, participateEconomyMult:0.8 } },
+  closing_ota:  { id:'closing_ota', name:'关门OTA', icon:'🔑', desc:'每次都是你切到最后一张券，偶像早已记住这个倔强的背影。', turn:-1,
+                  modifiers:{ idolAffectionMult:1.25, tokutenMoodMult:1.3 } },
 };
 
 // ★ 辅助：获取玩家的 gachi 标签 (返回 tagId 或 null)

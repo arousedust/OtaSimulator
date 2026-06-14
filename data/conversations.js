@@ -128,6 +128,26 @@ const CONVERSATION_POOL = [
     trigger: { idolTag: 'personal_cheered' },
     text: '她看到你，眼睛亮了一下：「{playerName}！谢谢你专门为我应援...真的很开心，像是有了特别的力量。」',
   },
+  {
+    id: 'schat_tsundere', type: 'special_chat',
+    trigger: { idolTag: 'tsundere' },
+    text: '她瞄了你一眼，板着脸：「...又来啦？每次都来，烦不烦啊。...不过，背切我画了十分钟，别以为是我特意给你画的！」说完就转过脸去了，但耳朵是红的。',
+  },
+  {
+    id: 'schat_cool_beauty', type: 'special_chat',
+    trigger: { idolTag: 'cool_beauty' },
+    text: '她沉默了一会，低头给你画背切。忽然头也不抬地说：「{playerName}，上次你说的那件事，我查了一下。」就一句话，但你知道她认真听你说话了。',
+  },
+  {
+    id: 'schat_closing', type: 'special_chat',
+    trigger: { playerTag: 'closing_ota' },
+    text: '「今天又只剩你了呢。」她一边画切一边小声说，完全没有不耐烦的样子。「下次也来晚点？」她抬头看着你，眼睛里有一点狡黠。',
+  },
+  {
+    id: 'schat_newbie', type: 'special_chat',
+    trigger: { playerTag: 'newbie' },
+    text: '她温柔地笑了笑：「初次见面？不要紧张~这里大家都很友善的。有什么不懂的就问STF哦。」然后又偷偷多塞了一颗糖给你。',
+  },
 
   // ===== 普通会话（按偶像状态 + 切数筛选）=====
   // 初见（切数=0）

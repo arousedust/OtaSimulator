@@ -395,13 +395,13 @@ const Game = (() => {
   function determineEnding() {
     // 特殊提前结局（从 EARLY_END_TRIGGERS 动态触发）
     if (state.gameOverReason === 'early_special' && state._earlyEndReason) {
-      return { title:'意外终结', desc: state._earlyEndReason };
+      return { title:'意外终结', desc: state._earlyEndReason, isEarly: true };
     }
     // 遍历 ENDING_LIST，首个条件匹配即为结局
     for (const ending of ENDING_LIST) {
-      if (ending.condition(state)) return { title: ending.title, desc: ending.desc };
+      if (ending.condition(state)) return { title: ending.title, desc: ending.desc, isEarly: !!ending.isEarly };
     }
-    return { title:'迷途之羊', desc:'几个月过去了，你既没有建立深厚的感情，也没有找到应援的意义...' };
+    return { title:'迷途之羊', desc:'几个月过去了...', isEarly: false };
   }
 
   function calcWeekCost() {

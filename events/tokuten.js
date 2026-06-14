@@ -54,4 +54,22 @@ const TOKUTEN_EVENT_POOL = [
   { id:'tokuten_gravity_pull', name:'无法抗拒的引力', desc:'她的眼神仿佛有一种引力，让你不由自主地想要了解她更多。和她在一起的每一秒都让人心跳加速。', icon:'🌑',
     requiredIdolTag:'gravity', repeatable:true, condition:()=>true, priority:1,
     effect:{mood:4}, idolEffect:{affection:2,mental:-1,awareness:3} },
+
+  // ── 地偶文化事件 ──
+  { id:'tokuten_shio', name:'盐对应', desc:'今天她似乎心情不好，切聊的时候几乎不说话，只是淡淡地看了你一眼。', icon:'🧂',
+    condition:()=>Math.random()<0.15, priority:2, effect:{mood:-6}, idolEffect:{affection:1,mental:-2} },
+  { id:'tokuten_ama', name:'甜对应', desc:'她今天的营业状态特别好，一直对你笑，还在拍立得上画了小爱心。', icon:'🍬',
+    condition:()=>Math.random()<0.15, priority:2, effect:{mood:12}, idolEffect:{affection:3,awareness:2} },
+  { id:'tokuten_closing', name:'关门了', desc:'你是今天最后一个切的。STF在旁边喊了好几次，她还在给你画宿题切。全场灯光亮起，只剩你们两个。', icon:'🔑',
+    condition:(s)=>(s.actionLog.tokuten||0)>=8&&Math.random()<0.2, minTurn:2, priority:2,
+    effect:{mood:18}, idolEffect:{affection:6,awareness:3}, grantTag:'closing_ota' },
+  { id:'tokuten_photograph', name:'你的图修好了', desc:'你上次在杆位拍的图修好了发到超话，她居然评论了：「拍得好好看！」', icon:'📸',
+    condition:(s)=>(s.actionLog.cheer||0)>=5&&Math.random()<0.25, minTurn:2, priority:2,
+    effect:{mood:10}, idolEffect:{affection:3,awareness:2}, grantTag:'photographer' },
+  { id:'tokuten_tsundere', name:'傲娇的温柔', desc:'她嘴上说着「又是你啊，烦死了」，但手上已经在默默给你画特别复杂的宿题切了。被同担看到笑出声。', icon:'😤',
+    requiredIdolTag:'tsundere', condition:()=>Math.random()<0.35, priority:1,
+    effect:{mood:6}, idolEffect:{affection:4,mental:-1,awareness:2} },
+  { id:'tokuten_cool', name:'简短而有力', desc:'话不多，但她叫出了你的名字。就两个字，你心跳停了一拍。', icon:'🖤',
+    requiredIdolTag:'cool_beauty', condition:()=>Math.random()<0.25, priority:1,
+    effect:{mood:14}, idolEffect:{affection:3,mental:1,awareness:4} },
 ];

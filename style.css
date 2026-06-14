@@ -13,6 +13,7 @@
   --text-1: #FFFFFF;
   --text-2: #E0E0F0;
   --text-3: #A0A0C0;
+  --text-4: #606080;
   --gold: #FFD700;
   --cyan: #00E5FF;
   --red: #FF4757;
@@ -1268,22 +1269,153 @@ html, body {
 /* ===========================
    响应式
    =========================== */
+
+/* --- 平板及以下 (≤900px) --- */
 @media (max-width: 900px) {
-  .char-cards { flex-direction: column; align-items: center; gap: 20px; }
-  .char-card { width: 100%; max-width: 320px; }
-  .game-main { flex-direction: column; }
-  .info-panel { width: 100%; border-left: none; border-top: 1px solid rgba(255,107,157,.1); max-height: 200px; }
   .game-title { font-size: 48px; }
+  .title-tagline { font-size: 14px; margin-bottom: 32px; }
+  .char-cards { flex-direction: column; align-items: center; gap: 20px; }
+  .char-card { width: 100%; max-width: 320px; padding: 24px 20px; }
+  .game-main { flex-direction: column; }
+  .info-panel { width: 100%; border-left: none; border-top: 1px solid rgba(255,107,157,.1); max-height: 200px; padding: 12px 16px; }
+  .event-log { max-height: 120px; }
   .tokuten-options-row { flex-direction: column; }
+  .choice-event-card { width: 90vw; }
+  .conversation-card { max-width: 90vw; }
 }
 
+/* --- 手机 (≤600px) --- */
 @media (max-width: 600px) {
-  .choice-cards { grid-template-columns: 1fr 1fr; }
-  .phase-indicator { flex-wrap: wrap; }
-  .stat-bars { flex-direction: column; gap: 8px; }
-  .game-topbar { flex-wrap: wrap; }
-  .target-idol-options { flex-direction: column; }
+  html, body { font-size: 14px; overflow-y: auto; }
+
+  /* 标题屏 */
+  .game-title { font-size: 36px; }
+  .title-tagline { font-size: 12px; letter-spacing: 2px; }
+  .title-sub { font-size: 28px; }
+
+  /* 角色选择 */
+  .screen-title { font-size: 22px; }
+  .screen-desc { font-size: 12px; margin-bottom: 16px; }
+  .char-icon { font-size: 40px; }
+  .char-name { font-size: 20px; }
+
+  /* 顶栏 */
+  .game-topbar {
+    padding: 8px 12px; gap: 10px; flex-wrap: wrap;
+  }
+  .topbar-left { gap: 8px; }
+  .player-name-display { font-size: 13px; padding: 2px 8px; }
+  .turn-num { font-size: 22px; }
+  .turn-label { font-size: 11px; }
+  .stat-bars { flex-direction: column; gap: 4px; flex: 1; }
+  .stat-item { max-width: none; }
+  .stat-bar-wrap { height: 8px; }
+  .stat-val { font-size: 11px; min-width: 40px; }
+
+  /* 行动面板 */
+  .action-panel { padding: 12px 8px; gap: 10px; }
+  .action-step { padding: 14px 12px; }
+  .action-step h3 { font-size: 15px; margin-bottom: 10px; }
+
+  /* 选择卡片 */
+  .choice-cards { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .choice-card { padding: 12px 8px; }
+  .choice-icon { font-size: 24px; }
+  .choice-card h4 { font-size: 13px; }
+
+  /* 阶段指示器 */
+  .phase-indicator { flex-wrap: wrap; gap: 4px; font-size: 11px; }
+  .phase-dot { padding: 6px 10px; }
+  .phase-arrow { display: none; }
+
+  /* 特典偶像网格 */
+  .tokuten-idol-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .tokuten-idol-card { padding: 8px 10px; }
+  .tokuten-idol-emoji { font-size: 20px; }
+  .tokuten-idol-name { font-size: 13px; }
+
+  /* 购券选择器 */
+  .ticket-count-btn { width: 40px; height: 40px; font-size: 20px; }
+  #ticket-count-display { font-size: 26px; }
+  .ticket-count-picker { gap: 8px; }
+
+  /* 已配置列表 */
+  .tokuten-selections-bar { padding: 8px 10px; gap: 6px; }
+
+  /* 右侧面板 */
+  .info-panel { max-height: 160px; gap: 12px; }
+  .info-panel h3 { font-size: 13px; }
+  .event-log { max-height: 100px; }
+  .known-idol-badge { font-size: 11px; }
+
+  /* 消耗总览 */
+  .action-summary { padding: 14px 12px; }
+  .action-summary h3 { font-size: 14px; }
+  .summary-details { grid-template-columns: 1fr; gap: 4px; }
+  .action-nav { flex-wrap: wrap; gap: 8px; }
+  .action-nav .neon-btn { flex: 1; padding: 10px 16px; font-size: 14px; }
+
+  /* 弹窗 */
+  .event-card { padding: 24px 16px; }
+  .event-icon { font-size: 36px; }
+  .event-title { font-size: 18px; }
+  .event-desc { font-size: 13px; }
+  .event-effects { gap: 6px; }
+  .effect-tag { font-size: 11px; padding: 3px 10px; }
+  .choice-option-btn { padding: 10px 14px; font-size: 14px; }
+
+  /* 会话卡 */
+  #conv-text { font-size: 14px; }
+  .conv-idol-info { font-size: 13px; }
+
+  /* 周末过渡 */
+  .week-transition-card { padding: 16px 24px; }
+  .week-transition-card h3 { font-size: 15px; }
+  .week-transition-stats { font-size: 12px; gap: 10px; }
+
+  /* 结算屏 */
+  .settle-stats { grid-template-columns: 1fr; gap: 10px; max-width: 100%; }
+  .settle-stat-val { font-size: 22px; }
+
+  /* 结局屏 */
+  .ending-title { font-size: 28px; }
+  .ending-desc { font-size: 14px; }
+  .ending-idol-details { grid-template-columns: repeat(3, 1fr); }
+  .ending-player-stats, .ending-idol-stats { grid-template-columns: 1fr; }
+  .ending-hidden-stat .stat-value { font-size: 15px; }
+
+  /* 标签 */
+  .player-tag-badge { font-size: 11px; padding: 3px 8px; }
+
+  /* 应援目标 */
+  .cheer-targets-title { font-size: 13px; }
+
+  /* 按钮 */
+  .neon-btn {
+    min-height: 40px;
+    padding: 10px 24px;
+    font-size: 14px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .neon-btn.small { padding: 7px 16px; font-size: 12px; min-height: 36px; }
+
+  /* 输入框 */
+  .name-input { font-size: 16px; padding: 8px 14px; }
+
+  /* 禁用 hover 动画（触屏无意义） */
+  .choice-card:hover,
+  .char-card:hover,
+  .char-card:hover .char-card-glow { transform: none; }
+  .char-card.selected { transform: translateY(-4px); }
+}
+
+/* --- 小屏手机 (≤380px) --- */
+@media (max-width: 380px) {
+  .game-title { font-size: 28px; }
+  .choice-cards { grid-template-columns: 1fr; }
   .tokuten-idol-grid { grid-template-columns: repeat(2, 1fr); }
-  .tokuten-options-row { flex-direction: column; }
-  .tokuten-config-panel { padding: 12px; }
+  .game-topbar { padding: 6px 8px; }
+  .player-name-display { display: none; }
+  .phase-dot { padding: 5px 8px; font-size: 10px; }
+  .ticket-count-btn { width: 36px; height: 36px; }
 }
